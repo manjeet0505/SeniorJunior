@@ -1,0 +1,237 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useResponsiveNavigation } from '@/utils/responsiveUtils';
+import { logout } from '@/utils/authUtils';
+import { useRouter } from 'next/navigation';
+
+/**
+ * Application layout component with responsive navigation
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components
+ * @returns {React.ReactNode} - Rendered component
+ */
+export default function AppLayout({ children }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isMenuOpen, toggleMenu, closeMenu, isMobileOrTablet } = useResponsiveNavigation();
+  const [user, setUser] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    // Get user data from localStorage
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+      }
+    }
+  }, []);
+
+  // Handle logout
+  const handleLogout = () => {
+    logout(() => {
+      router.push('/login');
+    });
+  };
+
+  // Navigation items based on user role
+  const getNavigationItems = () => {
+    const commonItems = [
+      { name: 'Dashboard', href: '/dashboard' },
+      { name: 'Connections', href: '/connections' },
+      { name: 'Messages', href: '/messages' },
+      { name: 'Profile', href: '/profile/edit' },
+    ];
+
+    // Add role-specific items
+    if (user?.role === 'junior') {
+      return [
+        ...commonItems,
+        { name: 'Find Seniors', href: '/seniors' },
+      ];
+    }
+
+    return commonItems;
+  };
+
+  const navigationItems = getNavigationItems();
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Navigation header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            {/* Logo and desktop navigation */}
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
+                  SeniorJunior
+                </Link>
+              </div>
+              
+              {/* Desktop navigation */}
+              <nav className="hidden lg:ml-6 lg:flex lg:space-x-8">
+                {isClient && user && navigationItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                      pathname === item.href
+                        ? 'border-indigo-500 text-gray-900'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+            
+            {/* User dropdown and mobile menu button */}
+            <div className="flex items-center">
+              {/* Desktop user info and sign out - only when logged in */}
+              {isClient && user && (
+                <div className="hidden lg:ml-4 lg:flex-shrink-0 lg:flex lg:items-center">
+                  <div className="ml-3 relative">
+                    <div className="flex items-center">
+                      <span className="hidden lg:block mr-3 text-sm font-medium text-gray-700">
+                        {user.username}
+                      </span>
+                      <button
+                        onClick={handleLogout}
+                        className="text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Mobile menu button - always visible on small screens */}
+              <div className="flex items-center lg:hidden">
+                <button
+                  onClick={toggleMenu}
+                  className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                  aria-expanded={isMenuOpen ? "true" : "false"}
+                >
+                  <span className="sr-only">Open main menu</span>
+                  {isMenuOpen ? (
+                    <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : (
+                    <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Mobile menu - improved visibility */}
+        {isMenuOpen && (
+          <div className="lg:hidden bg-white shadow-md border-t border-gray-100">
+            <div className="pt-2 pb-3 space-y-1">
+              {/* Show navigation items for logged in users */}
+              {isClient && user ? (
+                <>
+                  {navigationItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                        pathname === item.href
+                          ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                          : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                      }`}
+                      onClick={closeMenu}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                  <button
+                    onClick={() => {
+                      closeMenu();
+                      handleLogout();
+                    }}
+                    className="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-red-500 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                /* Show login/register options for non-logged in users */
+                <>
+                  <Link
+                    href="/"
+                    className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                      pathname === '/'
+                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                    onClick={closeMenu}
+                  >
+                    Home
+                  </Link>
+                  <Link
+                    href="/login"
+                    className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                      pathname === '/login'
+                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                    onClick={closeMenu}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                      pathname === '/register'
+                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                    onClick={closeMenu}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+      
+      {/* Main content */}
+      <main className="flex-grow">
+        {children}
+      </main>
+      
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex-shrink-0 flex items-center">
+              <span className="text-lg font-semibold text-gray-900">SeniorJunior</span>
+            </div>
+            <div className="mt-4 md:mt-0">
+              <p className="text-sm text-gray-500">
+                &copy; {new Date().getFullYear()} SeniorJunior. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -191,10 +191,315 @@ async function getUserState(user, dbConnected) {
   }
 }
 
-// Wrap the POST handler with authentication middleware
+// Page-specific prompt enhancer
+function enhancePromptForPage(basePrompt, currentPage, userRole, userState) {
+  const pageContext = `
+  
+CURRENT PAGE CONTEXT: ${currentPage.toUpperCase()}
+
+Page-specific guidance:
+${getPageSpecificGuidance(currentPage, userRole, userState)}`;
+
+  return basePrompt + pageContext;
+}
+
+function getPageSpecificGuidance(page, role, state) {
+  const guidance = {
+    dashboard: {
+      junior: {
+        new: `
+- Guide user to "Find Developers" to discover mentors
+- Explain stats cards and what they mean
+- Suggest next steps based on their current state`,
+        active: `
+- Guide user to book sessions with connected mentors
+- Help them understand their dashboard metrics
+- Suggest preparing for upcoming sessions`,
+        booked: `
+- Help them prepare for upcoming sessions
+- Guide them to review session details
+- Suggest messaging mentors with questions`
+      },
+      senior: {
+        idle: `
+- Help optimize their profile to attract mentees
+- Explain dashboard metrics and engagement
+- Guide them to update availability and skills`,
+        pending: `
+- Guide them to review pending requests
+- Help manage connection requests effectively
+- Suggest responding to requests promptly`,
+        active: `
+- Help track upcoming sessions and mentee progress
+- Guide them to manage their mentoring schedule
+- Suggest checking messages from mentees`
+      }
+    },
+    find_developers: {
+      junior: {
+        new: `
+- Explain how to use filters (skills, experience, availability)
+- Guide them through viewing mentor profiles
+- Help them understand how to send connection requests`,
+        active: `
+- Help them find additional mentors for different skills
+- Guide them to compare mentor profiles
+- Suggest sending requests to mentors with specific expertise`,
+        booked: `
+- Help them find mentors for additional skill areas
+- Guide them to explore different mentoring approaches
+- Suggest expanding their mentor network`
+      },
+      senior: {
+        idle: `
+- This page is for juniors - guide them back to dashboard
+- Suggest they update their profile to appear here
+- Explain how juniors will discover them`,
+        pending: `
+- Guide them back to dashboard to manage requests
+- Explain how their profile appears to juniors
+- Suggest updating their profile to attract better matches`,
+        active: `
+- Guide them back to dashboard for current mentees
+- Explain their visibility to potential mentees
+- Suggest profile updates based on mentee feedback`
+      }
+    },
+    mentor_profile: {
+      junior: {
+        new: `
+- Explain how to evaluate mentor profiles
+- Guide them to check skills, experience, and reviews
+- Help them understand when to send a connection request`,
+        active: `
+- Help them assess if this mentor matches their goals
+- Guide them to book a session if already connected
+- Suggest specific questions to ask this mentor`,
+        booked: `
+- Help them prepare for sessions with this mentor
+- Guide them to review mentor's expertise areas
+- Suggest topics to discuss based on mentor's background`
+      },
+      senior: {
+        idle: `
+- Help them optimize their own profile (if viewing their own)
+- Guide them to update skills, bio, and availability
+- Suggest adding specific mentoring topics`,
+        pending: `
+- Help them understand how their profile appears to juniors
+- Guide them to update profile to attract right mentees
+- Suggest setting clear expectations in their bio`,
+        active: `
+- Help them update profile based on mentee feedback
+- Guide them to reflect current expertise and availability
+- Suggest adding recent mentoring success stories`
+      }
+    },
+    chat: {
+      junior: {
+        new: `
+- Help them craft good introductory messages
+- Suggest questions to ask potential mentors
+- Guide them on professional communication etiquette`,
+        active: `
+- Help them prepare for mentoring sessions
+- Suggest topics to discuss with connected mentors
+- Guide them on sharing progress and asking for help`,
+        booked: `
+- Help them communicate with upcoming session mentors
+- Suggest pre-session questions and topics
+- Guide them on sharing materials for review`
+      },
+      senior: {
+        idle: `
+- Help them respond to junior inquiries
+- Guide them on setting communication expectations
+- Suggest professional mentoring communication style`,
+        pending: `
+- Help them respond to connection requests
+- Guide them on evaluating junior developer needs
+- Suggest setting initial mentoring expectations`,
+        active: `
+- Help them provide effective guidance via chat
+- Guide them on giving constructive feedback
+- Suggest sharing resources and learning materials`
+      }
+    },
+    sessions: {
+      junior: {
+        new: `
+- Explain they need to connect with mentors first
+- Guide them back to Find Developers
+- Help them understand the session booking process`,
+        active: `
+- Guide them to book sessions with connected mentors
+- Explain how to choose time slots and topics
+- Help them prepare for upcoming sessions`,
+        booked: `
+- Help them prepare for scheduled sessions
+- Guide them on session etiquette and preparation
+- Suggest topics and questions for each session`
+      },
+      senior: {
+        idle: `
+- Guide them to update availability in profile
+- Explain how juniors will book sessions
+- Help them set up their mentoring schedule`,
+        pending: `
+- Guide them to set availability for sessions
+- Help them prepare for upcoming mentoring sessions
+- Suggest structuring their session time effectively`,
+        active: `
+- Help them manage their session schedule
+- Guide them on preparing for each mentee session
+- Suggest tracking mentee progress across sessions`
+      }
+    }
+  };
+
+  return guidance[page]?.[role]?.[state] || "Provide general platform guidance and suggest relevant actions.";
+}
+
+// Generate CTA suggestions based on context
+function generateCTAs(currentPage, userRole, userState, messageContent) {
+  const ctas = [];
+
+  // Define possible CTAs based on page and user state
+  const ctaMap = {
+    dashboard: {
+      junior: {
+        new: [
+          { label: "Find Developers", action: "NAVIGATE", path: "/find-developers" },
+          { label: "View Profile", action: "NAVIGATE", path: "/profile" }
+        ],
+        active: [
+          { label: "Book Session", action: "NAVIGATE", path: "/sessions" },
+          { label: "View Messages", action: "NAVIGATE", path: "/chat" }
+        ],
+        booked: [
+          { label: "View Sessions", action: "NAVIGATE", path: "/sessions" },
+          { label: "Message Mentor", action: "NAVIGATE", path: "/chat" }
+        ]
+      },
+      senior: {
+        idle: [
+          { label: "Update Profile", action: "NAVIGATE", path: "/profile" },
+          { label: "View Requests", action: "NAVIGATE", path: "/requests" }
+        ],
+        pending: [
+          { label: "Review Requests", action: "NAVIGATE", path: "/requests" },
+          { label: "Update Availability", action: "NAVIGATE", path: "/profile" }
+        ],
+        active: [
+          { label: "View Sessions", action: "NAVIGATE", path: "/sessions" },
+          { label: "View Messages", action: "NAVIGATE", path: "/chat" }
+        ]
+      }
+    },
+    find_developers: {
+      junior: {
+        new: [
+          { label: "Filter by Skills", action: "FILTER", path: "skills" },
+          { label: "Send Request", action: "REQUEST", path: "connect" }
+        ],
+        active: [
+          { label: "View Profile", action: "VIEW", path: "profile" },
+          { label: "Send Request", action: "REQUEST", path: "connect" }
+        ],
+        booked: [
+          { label: "Book Session", action: "NAVIGATE", path: "/sessions" },
+          { label: "View Profile", action: "VIEW", path: "profile" }
+        ]
+      }
+    },
+    mentor_profile: {
+      junior: {
+        new: [
+          { label: "Send Request", action: "REQUEST", path: "connect" },
+          { label: "View Reviews", action: "VIEW", path: "reviews" }
+        ],
+        active: [
+          { label: "Book Session", action: "NAVIGATE", path: "/sessions" },
+          { label: "Send Message", action: "NAVIGATE", path: "/chat" }
+        ],
+        booked: [
+          { label: "View Sessions", action: "NAVIGATE", path: "/sessions" },
+          { label: "Send Message", action: "NAVIGATE", path: "/chat" }
+        ]
+      }
+    },
+    chat: {
+      junior: {
+        new: [
+          { label: "Find Developers", action: "NAVIGATE", path: "/find-developers" },
+          { label: "View Profile", action: "NAVIGATE", path: "/profile" }
+        ],
+        active: [
+          { label: "Book Session", action: "NAVIGATE", path: "/sessions" },
+          { label: "Find More Mentors", action: "NAVIGATE", path: "/find-developers" }
+        ],
+        booked: [
+          { label: "View Sessions", action: "NAVIGATE", path: "/sessions" },
+          { label: "Prepare Questions", action: "GUIDE", path: "prepare" }
+        ]
+      },
+      senior: {
+        idle: [
+          { label: "Update Profile", action: "NAVIGATE", path: "/profile" },
+          { label: "Set Availability", action: "NAVIGATE", path: "/profile" }
+        ],
+        pending: [
+          { label: "Review Requests", action: "NAVIGATE", path: "/requests" },
+          { label: "Update Profile", action: "NAVIGATE", path: "/profile" }
+        ],
+        active: [
+          { label: "View Sessions", action: "NAVIGATE", path: "/sessions" },
+          { label: "View Messages", action: "NAVIGATE", path: "/chat" }
+        ]
+      }
+    },
+    sessions: {
+      junior: {
+        new: [
+          { label: "Find Developers", action: "NAVIGATE", path: "/find-developers" },
+          { label: "View Connections", action: "NAVIGATE", path: "/dashboard" }
+        ],
+        active: [
+          { label: "Book Session", action: "BOOK", path: "schedule" },
+          { label: "View Mentors", action: "NAVIGATE", path: "/find-developers" }
+        ],
+        booked: [
+          { label: "Join Session", action: "JOIN", path: "session-room" },
+          { label: "Message Mentor", action: "NAVIGATE", path: "/chat" }
+        ]
+      },
+      senior: {
+        idle: [
+          { label: "Update Availability", action: "NAVIGATE", path: "/profile" },
+          { label: "View Profile", action: "NAVIGATE", path: "/profile" }
+        ],
+        pending: [
+          { label: "Set Availability", action: "NAVIGATE", path: "/profile" },
+          { label: "Review Requests", action: "NAVIGATE", path: "/requests" }
+        ],
+        active: [
+          { label: "Start Session", action: "JOIN", path: "session-room" },
+          { label: "View Schedule", action: "VIEW", path: "calendar" }
+        ]
+      }
+    }
+  };
+
+  const possibleCTAs = ctaMap[currentPage]?.[userRole]?.[userState] || [];
+  
+  // Return 1-2 most relevant CTAs based on message content
+  return possibleCTAs.slice(0, 2);
+}
+
+// Wrap POST handler with authentication middleware
 export const POST = withAuth(async function POST(req) {
   try {
-    const { messages } = await req.json();
+    const { messages, page } = await req.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -207,6 +512,7 @@ export const POST = withAuth(async function POST(req) {
 
     // Get user role and state
     const userRole = req.user?.role || 'junior';
+    const currentPage = page || 'dashboard'; // Default to dashboard if no page provided
     
     // Try to connect to database for state detection
     let dbConnected = false;
@@ -221,38 +527,41 @@ export const POST = withAuth(async function POST(req) {
     const userState = await getUserState(req.user, dbConnected);
     
     // Select appropriate system prompt based on role and state
-    let systemPrompt;
+    let basePrompt;
     if (userRole === 'junior') {
       switch (userState) {
         case 'new':
-          systemPrompt = JUNIOR_NEW_PROMPT;
+          basePrompt = JUNIOR_NEW_PROMPT;
           break;
         case 'active':
-          systemPrompt = JUNIOR_ACTIVE_PROMPT;
+          basePrompt = JUNIOR_ACTIVE_PROMPT;
           break;
         case 'booked':
-          systemPrompt = JUNIOR_BOOKED_PROMPT;
+          basePrompt = JUNIOR_BOOKED_PROMPT;
           break;
         default:
-          systemPrompt = JUNIOR_NEW_PROMPT; // Fallback
+          basePrompt = JUNIOR_NEW_PROMPT; // Fallback
       }
     } else {
       switch (userState) {
         case 'idle':
-          systemPrompt = SENIOR_IDLE_PROMPT;
+          basePrompt = SENIOR_IDLE_PROMPT;
           break;
         case 'pending':
-          systemPrompt = SENIOR_PENDING_PROMPT;
+          basePrompt = SENIOR_PENDING_PROMPT;
           break;
         case 'active':
-          systemPrompt = SENIOR_ACTIVE_PROMPT;
+          basePrompt = SENIOR_ACTIVE_PROMPT;
           break;
         default:
-          systemPrompt = SENIOR_IDLE_PROMPT; // Fallback
+          basePrompt = SENIOR_IDLE_PROMPT; // Fallback
       }
     }
     
-    console.log(`Using ${userRole} role with ${userState} state for chat request`);
+    // Enhance prompt with page-specific context
+    const systemPrompt = enhancePromptForPage(basePrompt, currentPage, userRole, userState);
+    
+    console.log(`Using ${userRole} role with ${userState} state on ${currentPage} page for chat request`);
 
     const openai = new OpenAI({ apiKey });
 
@@ -267,8 +576,17 @@ export const POST = withAuth(async function POST(req) {
     });
 
     const reply = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+    
+    // Generate relevant CTAs based on context
+    const ctas = generateCTAs(currentPage, userRole, userState, reply);
 
-    return new Response(JSON.stringify({ text: reply }), {
+    // Return structured response
+    const response = {
+      message: reply,
+      cta: ctas.length > 0 ? ctas : undefined
+    };
+
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

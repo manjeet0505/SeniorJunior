@@ -35,6 +35,20 @@ export default function Chat({ onClose }) {
   const [typingMessage, setTypingMessage] = useState('');
   const [isTypingAnimation, setIsTypingAnimation] = useState(false);
 
+  // Get current page from URL
+  const getCurrentPage = () => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path === '/' || path === '/dashboard') return 'dashboard';
+      if (path.includes('/find-developers')) return 'find_developers';
+      if (path.includes('/profile')) return 'mentor_profile';
+      if (path.includes('/chat')) return 'chat';
+      if (path.includes('/sessions')) return 'sessions';
+      return 'dashboard'; // Default fallback
+    }
+    return 'dashboard';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -51,7 +65,10 @@ export default function Chat({ onClose }) {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
+        body: JSON.stringify({ 
+          messages: [...messages, userMessage],
+          page: getCurrentPage()
+        }),
       });
 
       if (!response.ok) {
@@ -59,10 +76,17 @@ export default function Chat({ onClose }) {
       }
 
       const data = await response.json();
-      const aiMessage = { role: 'assistant', content: data.text, id: (Date.now() + 1).toString() };
+      
+      // Handle structured response with CTAs
+      const aiMessage = { 
+        role: 'assistant', 
+        content: data.message, 
+        id: (Date.now() + 1).toString(),
+        cta: data.cta // Store CTAs with the message
+      };
       
       // Start typing animation
-      await simulateTyping(data.text, (partialText) => {
+      await simulateTyping(data.message, (partialText) => {
         setTypingMessage(partialText);
       });
       
@@ -89,6 +113,43 @@ export default function Chat({ onClose }) {
       currentText += (i > 0 ? ' ' : '') + words[i];
       onUpdate(currentText);
       await new Promise(resolve => setTimeout(resolve, 30 + Math.random() * 50)); // 30-80ms per word
+    }
+  };
+
+  // Handle CTA button clicks
+  const handleCTAClick = (cta) => {
+    switch (cta.action) {
+      case 'NAVIGATE':
+        if (typeof window !== 'undefined') {
+          window.location.href = cta.path;
+        }
+        break;
+      case 'FILTER':
+        // Trigger filter action (would need to be implemented based on page)
+        console.log('Filter action:', cta.path);
+        break;
+      case 'REQUEST':
+        // Trigger connection request (would need to be implemented)
+        console.log('Request action:', cta.path);
+        break;
+      case 'BOOK':
+        // Trigger booking action (would need to be implemented)
+        console.log('Book action:', cta.path);
+        break;
+      case 'JOIN':
+        // Trigger join session action (would need to be implemented)
+        console.log('Join action:', cta.path);
+        break;
+      case 'VIEW':
+        // Trigger view action (would need to be implemented)
+        console.log('View action:', cta.path);
+        break;
+      case 'GUIDE':
+        // Trigger guide action (would need to be implemented)
+        console.log('Guide action:', cta.path);
+        break;
+      default:
+        console.log('Unknown CTA action:', cta);
     }
   };
 
@@ -222,6 +283,23 @@ export default function Chat({ onClose }) {
                   : 'bg-white/10 backdrop-blur-lg text-gray-100 border border-white/20'
               }`}>
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                
+                {/* Render CTA buttons for AI messages */}
+                {message.role === 'assistant' && message.cta && message.cta.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {message.cta.map((cta, index) => (
+                      <motion.button
+                        key={index}
+                        onClick={() => handleCTAClick(cta)}
+                        className="w-full px-3 py-2 bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/30 hover:to-blue-600/30 border border-purple-500/30 rounded-lg text-xs text-purple-300 hover:text-white transition-all duration-200 text-left"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {cta.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useAuth, getAuthHeaders } from '@/utils/authUtils';
 import { motion } from 'framer-motion';
 import { Users, Mail, Search, Calendar, BookOpen, Zap } from 'lucide-react';
+import AnimatedBackground from '@/components/AnimatedBackground';
 
 const StatCard = ({ icon, title, value, helperText }) => (
   <motion.div
@@ -224,8 +225,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1A0B2E] text-white pt-24">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <AnimatedBackground variant="orbs">
+      <div className="min-h-screen text-white pt-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero / Welcome Section */}
         <header className="mb-12">
           <div className="flex justify-between items-start">
@@ -430,5 +432,6 @@ export default function Dashboard() {
         </section>
       </div>
     </div>
+  </AnimatedBackground>
   );
 }

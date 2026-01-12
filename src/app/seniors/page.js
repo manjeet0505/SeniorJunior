@@ -158,8 +158,8 @@ export default function SearchSeniors() {
                       <p className="text-sm font-medium text-gray-300 mb-2">Skills</p>
                       <div className="flex flex-wrap gap-2">
                         {senior.skills && senior.skills.map((skill, index) => (
-                          <span 
-                            key={index} 
+                          <span
+                            key={index}
                             className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium"
                           >
                             {skill}
@@ -192,14 +192,14 @@ export default function SearchSeniors() {
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     className={`relative inline-flex items-center px-4 py-2 rounded-l-full border border-white/20 bg-white/10 text-sm font-medium ${
-                      currentPage === 1 
-                        ? 'text-gray-500 cursor-not-allowed' 
+                      currentPage === 1
+                        ? 'text-gray-500 cursor-not-allowed'
                         : 'text-white hover:bg-white/20'
                     }`}
                   >
                     Previous
                   </button>
-                  
+
                   {[...Array(totalPages)].map((_, index) => (
                     <button
                       key={index}
@@ -213,13 +213,13 @@ export default function SearchSeniors() {
                       {index + 1}
                     </button>
                   ))}
-                  
+
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className={`relative inline-flex items-center px-4 py-2 rounded-r-full border border-white/20 bg-white/10 text-sm font-medium ${
-                      currentPage === totalPages 
-                        ? 'text-gray-500 cursor-not-allowed' 
+                      currentPage === totalPages
+                        ? 'text-gray-500 cursor-not-allowed'
                         : 'text-white hover:bg-white/20'
                     }`}
                   >

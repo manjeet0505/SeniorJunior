@@ -19,7 +19,9 @@ export default function FloatingChat() {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="mb-4"
           >
-            <div className="w-96 h-[600px] bg-[#1A0B2E] rounded-2xl shadow-2xl border border-white/10 overflow-hidden flex flex-col">
+            <div className="w-96 h-[600px] bg-[#1A0B2E] rounded-2xl shadow-2xl border border-white/10 overflow-hidden flex flex-col"
+                 style={{ touchAction: 'none' }} // Prevent touch scroll on parent
+            >
               <Chat onClose={() => setIsOpen(false)} />
             </div>
           </motion.div>

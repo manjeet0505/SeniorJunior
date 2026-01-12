@@ -4,6 +4,23 @@ import { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Add custom scrollbar hide styles
+const scrollbarHideStyles = `
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+`;
+
+if (typeof window !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = scrollbarHideStyles;
+  document.head.appendChild(styleSheet);
+}
+
 const suggestedPrompts = [
   "How do I find a mentor?",
   "What skills should I learn?",
@@ -15,6 +32,8 @@ export default function Chat({ onClose }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [typingMessage, setTypingMessage] = useState('');
+  const [isTypingAnimation, setIsTypingAnimation] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,6 +44,8 @@ export default function Chat({ onClose }) {
     setInput('');
     setShowSuggestions(false);
     setIsTyping(true);
+    setIsTypingAnimation(true);
+    setTypingMessage('');
 
     try {
       const response = await fetch('/api/chat', {
@@ -39,7 +60,16 @@ export default function Chat({ onClose }) {
 
       const data = await response.json();
       const aiMessage = { role: 'assistant', content: data.text, id: (Date.now() + 1).toString() };
+      
+      // Start typing animation
+      await simulateTyping(data.text, (partialText) => {
+        setTypingMessage(partialText);
+      });
+      
+      // Add complete message and stop typing
       setMessages(prev => [...prev, aiMessage]);
+      setTypingMessage('');
+      setIsTypingAnimation(false);
 
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -50,17 +80,60 @@ export default function Chat({ onClose }) {
     }
   };
 
+  // Simulate typing effect
+  const simulateTyping = async (text, onUpdate) => {
+    let currentText = '';
+    const words = text.split(' ');
+    
+    for (let i = 0; i < words.length; i++) {
+      currentText += (i > 0 ? ' ' : '') + words[i];
+      onUpdate(currentText);
+      await new Promise(resolve => setTimeout(resolve, 30 + Math.random() * 50)); // 30-80ms per word
+    }
+  };
+
   const handleSuggestionClick = (suggestion) => {
     setInput(suggestion);
     setShowSuggestions(false);
   };
 
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
+  
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // Set new timeout to scroll after DOM update
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (messagesContainerRef.current) {
+        const scrollElement = messagesContainerRef.current;
+        // Force scroll to bottom
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+        
+        // Double-check scroll worked
+        setTimeout(() => {
+          if (scrollElement.scrollTop < scrollElement.scrollHeight - scrollElement.clientHeight) {
+            scrollElement.scrollTop = scrollElement.scrollHeight;
+          }
+        }, 10);
+      }
+    }, 50); // Reduced delay for faster response
   };
 
-  useEffect(scrollToBottom, [messages, isTyping]);
+  useEffect(() => {
+    scrollToBottom();
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [messages, isTyping, typingMessage]);
 
   return (
     <div className="flex flex-col h-full w-full bg-[#1A0B2E]">
@@ -91,7 +164,25 @@ export default function Chat({ onClose }) {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
+        style={{ 
+          minHeight: '0px', // Important for flex container with overflow
+          maxHeight: '400px', // Ensure it has a max height for scrolling
+          border: '1px solid rgba(255,255,255,0.1)', // Debug border
+          overscrollBehavior: 'contain', // Prevent parent scrolling
+          touchAction: 'pan-y' // Enable vertical scrolling only
+        }}
+        onWheel={(e) => {
+          // Prevent event bubbling to parent
+          e.stopPropagation();
+        }}
+        onTouchMove={(e) => {
+          // Prevent touch scroll bubbling
+          e.stopPropagation();
+        }}
+      >
         {messages.length === 0 && (
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -136,8 +227,9 @@ export default function Chat({ onClose }) {
           </motion.div>
         ))}
 
+        {/* Typing Animation Message */}
         <AnimatePresence>
-          {isTyping && (
+          {isTypingAnimation && typingMessage && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -149,18 +241,17 @@ export default function Chat({ onClose }) {
                   <Bot size={16} className="text-purple-400" />
                 </div>
                 <div className="px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                  </div>
+                  <p className="text-sm whitespace-pre-wrap">
+                    {typingMessage}
+                    <span className="inline-block w-2 h-4 bg-purple-400 animate-pulse ml-1"></span>
+                  </p>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div ref={messagesEndRef} />
+        <div ref={messagesContainerRef} />
       </div>
 
       {/* Suggested Prompts */}
@@ -192,15 +283,15 @@ export default function Chat({ onClose }) {
               value={input}
               placeholder="Ask me anything..."
               onChange={(e) => setInput(e.target.value)}
-              disabled={isTyping}
+              disabled={isTyping || isTypingAnimation}
             />
           </div>
           <motion.button
             type="submit"
             className="w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed"
-            whileHover={{ scale: input.trim() && !isTyping ? 1.05 : 1 }}
-            whileTap={{ scale: input.trim() && !isTyping ? 0.95 : 1 }}
-            disabled={!input.trim() || isTyping}
+            whileHover={{ scale: input.trim() && !isTyping && !isTypingAnimation ? 1.05 : 1 }}
+            whileTap={{ scale: input.trim() && !isTyping && !isTypingAnimation ? 0.95 : 1 }}
+            disabled={!input.trim() || isTyping || isTypingAnimation}
           >
             <Send size={16} />
           </motion.button>

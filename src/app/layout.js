@@ -12,9 +12,10 @@ export const metadata = {
   description: "Platform connecting senior and junior developers",
 };
 
-import AdvancedNavbar from "@/components/layout/AdvancedNavbar";
+import AdvancedNavbar from "@/app/components/AdvancedNavbar";
 import FloatingChat from "@/components/chat/FloatingChat";
 import SmoothScroll from "@/components/layout/SmoothScroll";
+import CurrentYear from "@/app/components/CurrentYear";
 
 export default function RootLayout({ children }) {
   return (
@@ -68,7 +69,7 @@ export default function RootLayout({ children }) {
               </div>
 
               <div className="mt-16 pt-8 border-t border-white/10 flex justify-between items-center">
-                <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} SeniorJunior. All rights reserved.</p>
+                <p className="text-sm text-gray-500">&copy; <CurrentYear /> SeniorJunior. All rights reserved.</p>
                 <a href="#" className="text-gray-500 hover:text-white transition-colors duration-200">
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
                 </a>

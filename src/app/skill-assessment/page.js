@@ -52,38 +52,44 @@ const SkillAssessmentPage = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Skill Assessment</h1>
-      <div className="bg-white rounded-lg shadow p-6">
-        {!finished ? (
-          <div>
-            <p className="mb-4 font-semibold">{questions[current].question}</p>
-            <div className="space-y-2 mb-6">
-              {questions[current].options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  className={`block w-full text-left px-4 py-2 rounded border ${selected === idx ? 'bg-blue-100 border-blue-500' : 'border-gray-300'} hover:bg-blue-50`}
-                  onClick={() => setSelected(idx)}
-                  disabled={selected !== null}
-                >
-                  {opt}
-                </button>
-              ))}
+    <div className="min-h-screen bg-[#1A0B2E] text-white pt-24 flex items-center justify-center">
+      <div className="max-w-xl w-full px-4">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-12 text-center">Skill Assessment</h1>
+        <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-8">
+          {!finished ? (
+            <div>
+              <p className="mb-6 font-semibold text-lg">{questions[current].question}</p>
+              <div className="space-y-3 mb-8">
+                {questions[current].options.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    className={`block w-full text-left px-4 py-3 rounded-xl border transition-all ${
+                      selected === idx 
+                        ? 'bg-purple-600 border-purple-600 text-white' 
+                        : 'border-white/20 hover:border-purple-500/50 text-white'
+                    }`}
+                    onClick={() => setSelected(idx)}
+                    disabled={selected !== null}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              <button
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full py-3 font-semibold hover:scale-105 transform transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleNext}
+                disabled={selected === null}
+              >
+                {current + 1 < questions.length ? 'Next' : 'Finish'}
+              </button>
             </div>
-            <button
-              className="w-full bg-blue-500 text-white rounded py-2 hover:bg-blue-600"
-              onClick={handleNext}
-              disabled={selected === null}
-            >
-              {current + 1 < questions.length ? 'Next' : 'Finish'}
-            </button>
-          </div>
-        ) : (
-          <div className="text-center">
-            <p className="text-xl font-semibold mb-4">Assessment Complete!</p>
-            <p className="text-lg">Your Score: <span className="font-bold">{score} / {questions.length}</span></p>
-          </div>
-        )}
+          ) : (
+            <div className="text-center">
+              <p className="text-2xl font-bold mb-4">Assessment Complete!</p>
+              <p className="text-lg text-gray-300">Your Score: <span className="font-bold text-purple-400">{score} / {questions.length}</span></p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

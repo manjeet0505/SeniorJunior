@@ -61,7 +61,7 @@ export default function Register() {
 
   return (
     <AuthLayout title="Create Account" subtitle="Join our community of developers.">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" suppressHydrationWarning>
         {error && <p className="text-red-400 text-sm text-center pb-2">{error}</p>}
         
         <div className="relative">

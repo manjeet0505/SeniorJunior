@@ -1,495 +1,433 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import { useAuth, getAuthHeaders } from '@/utils/authUtils';
-import { useErrorHandler } from '@/utils/errorUtils';
-import ErrorDisplay, { LoadingIndicator, SuccessDisplay } from '@/components/ui/ErrorDisplay';
-import ResponsiveContainer, { ResponsiveGrid } from '@/components/ui/ResponsiveContainer';
-// Removed AppLayout import to prevent duplicate navbar
+import { motion } from 'framer-motion';
+import { Users, Mail, Search, Calendar, BookOpen, Zap } from 'lucide-react';
+
+const StatCard = ({ icon, title, value, helperText }) => (
+  <motion.div
+    className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6 flex items-center gap-6"
+    whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(192, 132, 252, 0.3)' }}
+  >
+    <div className="bg-white/10 p-4 rounded-full">
+      {icon}
+    </div>
+    <div>
+      <p className="text-gray-400 text-sm">{title}</p>
+      <p className="text-3xl font-bold">{value}</p>
+      {helperText && <p className="text-gray-500 text-xs mt-1">{helperText}</p>}
+    </div>
+  </motion.div>
+);
+
+const SeniorDeveloperCard = ({ senior }) => (
+  <motion.div
+    className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6 text-center hover:border-purple-500/50 transition-colors duration-300"
+    whileHover={{ y: -5 }}
+  >
+    <div className="w-24 h-24 rounded-full mx-auto mb-4 bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+      <span className="text-4xl font-bold">{senior.username.charAt(0).toUpperCase()}</span>
+    </div>
+    <h3 className="text-xl font-bold">{senior.username}</h3>
+    <p className="text-gray-400 text-sm mb-4">{senior.role}</p>
+    <div className="flex flex-wrap gap-2 justify-center mb-6">
+      {senior.skills.slice(0, 3).map((skill) => (
+        <span key={skill} className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium">{skill}</span>
+      ))}
+    </div>
+    <Link href={`/profile/${senior._id}`} className="px-6 py-2 bg-white/10 rounded-full font-semibold hover:bg-white/20 transition-colors duration-300">
+      View Profile
+    </Link>
+  </motion.div>
+);
+
+const QuickActionCard = ({ icon, title, description, href }) => (
+  <Link href={href}>
+    <motion.div
+      className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6 text-center h-full flex flex-col items-center justify-center hover:border-purple-500/50 transition-colors duration-300"
+      whileHover={{ y: -5 }}
+    >
+      <div className="bg-white/10 p-4 rounded-full mb-4">
+        {icon}
+      </div>
+      <h3 className="font-bold text-lg mb-1">{title}</h3>
+      <p className="text-gray-400 text-sm">{description}</p>
+    </motion.div>
+  </Link>
+);
+
+const NextStepCard = ({ user, stats }) => {
+  const getNextStep = () => {
+    if (user.role === 'junior') {
+      if (stats.connections === 0) {
+        return {
+          title: "Find Senior Developers",
+          description: "Connect with experienced mentors who can help you grow your skills",
+          action: "Browse Senior Developers",
+          href: "/seniors",
+          icon: <Search size={32} />
+        };
+      } else if (stats.pendingRequests > 0) {
+        return {
+          title: "Review Your Requests",
+          description: "You have pending connection requests waiting for your response",
+          action: "View Requests",
+          href: "/connections",
+          icon: <Users size={32} />
+        };
+      } else {
+        return {
+          title: "Book Your First Session",
+          description: "Schedule a one-on-one mentoring session with a senior developer",
+          action: "Schedule Session",
+          href: "/schedule",
+          icon: <Calendar size={32} />
+        };
+      }
+    } else {
+      if (stats.connections === 0) {
+        return {
+          title: "Help Junior Developers",
+          description: "Share your knowledge and mentor the next generation of developers",
+          action: "Find Junior Developers",
+          href: "/juniors",
+          icon: <Users size={32} />
+        };
+      } else {
+        return {
+          title: "Check Your Messages",
+          description: "Stay connected with your mentees and answer their questions",
+          action: "View Messages",
+          href: "/messages",
+          icon: <Mail size={32} />
+        };
+      }
+    }
+  };
+
+  const nextStep = getNextStep();
+
+  return (
+    <motion.div
+      className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-xl rounded-2xl border border-purple-500/30 p-8 relative overflow-hidden"
+      whileHover={{ scale: 1.02 }}
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
+      <div className="relative z-10">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="bg-purple-500/20 p-3 rounded-full">
+            {nextStep.icon}
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-purple-300">Your Next Step</h3>
+            <p className="text-gray-300 text-sm">Recommended action for you</p>
+          </div>
+        </div>
+        <h4 className="text-xl font-semibold mb-2">{nextStep.title}</h4>
+        <p className="text-gray-400 mb-6">{nextStep.description}</p>
+        <Link 
+          href={nextStep.href}
+          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full font-semibold hover:scale-105 transform transition-all duration-300"
+        >
+          {nextStep.action}
+          <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+      </div>
+    </motion.div>
+  );
+};
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user, loading: authLoading, error: authError, authenticated } = useAuth();
-  const { error, loading, executeApiCall, handleError, clearError } = useErrorHandler();
+  const { user, loading: authLoading, authenticated } = useAuth();
+  const [dashboardLoading, setDashboardLoading] = useState(true);
   
-  // Use refs to track if data has been loaded and prevent infinite loops
-  const dataLoaded = useRef(false);
-  const dataFetchAttempted = useRef(false);
-  
-  const [stats, setStats] = useState({
-    connections: 0,
-    pendingRequests: 0,
-    messages: 0
-  });
-  const [recentConnections, setRecentConnections] = useState([]);
+  const [stats, setStats] = useState({ connections: 0, pendingRequests: 0, messages: 0, upcomingSessions: 0 });
   const [recommendedSeniors, setRecommendedSeniors] = useState([]);
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
 
-  // Memoize the fetchDashboardData function to prevent infinite loops
   const fetchDashboardData = useCallback(async () => {
-    // Skip if data fetch has been attempted or data has already been loaded
-    if (dataFetchAttempted.current) return;
-    
-    // Mark that we've attempted to fetch data
-    dataFetchAttempted.current = true;
-    
-    try {
-      // First verify we have a valid token
-      const token = localStorage.getItem('token');
-      
-      // For development, allow mock token
-      if (!token && process.env.NODE_ENV === 'development') {
-        console.log('Development mode: Using mock token');
-        const mockToken = 'mock-token-for-development';
-        localStorage.setItem('token', mockToken);
-        
-        // Set mock user if not present
-        if (!localStorage.getItem('user')) {
-          const mockUser = {
-            _id: '507f1f77bcf86cd799439011',
-            username: 'dev_user',
-            email: 'dev@example.com',
-            role: 'senior'
-          };
-          localStorage.setItem('user', JSON.stringify(mockUser));
-        }
-      } else if (!token) {
-        console.error('No authentication token found');
-        router.push('/login');
-        return;
-      }
-      
-      await executeApiCall(async () => {
-        const authHeaders = getAuthHeaders();
-        
-        // Verify the user is authenticated by fetching user data
-        try {
-          const response = await axios.get('/api/users/me', {
-            ...authHeaders,
-            timeout: 8000,
-            validateStatus: function (status) {
-              // Consider all status codes as successful to handle them manually
-              return true;
-            }
-          });
-          
-          // Handle non-200 responses
-          if (response.status !== 200) {
-            console.warn(`Authentication check returned status ${response.status}`);
-            
-            // In development mode, continue anyway with mock data
-            if (process.env.NODE_ENV === 'development') {
-              console.log('Development mode: Continuing despite auth error');
-              // Continue with dashboard data fetch
-            } else if (response.status === 401) {
-              // Clear invalid auth data and redirect to login
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-              router.push('/login');
-              return;
-            }
-          }
-        } catch (authError) {
-          console.error('Authentication error:', authError);
-          
-          // In development mode, continue anyway with mock data
-          if (process.env.NODE_ENV === 'development') {
-            console.log('Development mode: Continuing despite auth error');
-            // Continue with dashboard data fetch
-          } else {
-            // Clear invalid auth data and redirect to login
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            router.push('/login');
-            return;
-          }
-        }
-        
-        try {
-          // Fetch stats data from API
-          const statsResponse = await axios.get('/api/users/stats', authHeaders);
-          setStats(statsResponse.data);
-        } catch (statsError) {
-          console.error('Error fetching stats:', statsError);
-          // Set default stats if API fails
-          setStats({
-            connections: 0,
-            pendingRequests: 0,
-            messages: 0
-          });
-        }
-        
-        try {
-          // Fetch recent connections
-          const connectionsResponse = await axios.get('/api/connections?status=accepted&limit=3', authHeaders);
-          setRecentConnections(connectionsResponse.data?.connections || []);
-        } catch (connectionsError) {
-          console.error('Error fetching connections:', connectionsError);
-          setRecentConnections([]);
-        }
-        
-        // Fetch recommended seniors for junior developers
-        if (user?.role === 'junior') {
-          try {
-            const response = await axios.get('/api/users/seniors?limit=3', authHeaders);
-            setRecommendedSeniors(response.data?.seniors || []);
-          } catch (seniorsError) {
-            console.error('Error fetching recommended seniors:', seniorsError);
-            setRecommendedSeniors([]);
-          }
-        }
-        
-        // Mark data as loaded to prevent repeated API calls
-        dataLoaded.current = true;
-      });
-    } catch (err) {
-      console.error('Dashboard data fetch error:', err);
-      handleError(err);
-    }
-  }, [executeApiCall, handleError, user, router]);
+    if (!authenticated) return;
 
-  // Use a separate effect for data fetching to prevent infinite loops
+    setDashboardLoading(true);
+    // Don't use executeApiCall for individual API calls to prevent cascading failures
+    try {
+      const authHeaders = getAuthHeaders();
+      
+      // Fetch stats
+      try {
+        const statsResponse = await axios.get('/api/users/stats', authHeaders);
+        setStats(statsResponse.data);
+      } catch (statsError) {
+        console.error('Error fetching stats:', statsError);
+        // Set fallback values instead of failing
+        setStats({ connections: 0, pendingRequests: 0, messages: 0, upcomingSessions: 0 });
+      }
+
+      // Fetch upcoming sessions
+      try {
+        const sessionsResponse = await axios.get('/api/sessions?upcoming=true&limit=3');
+        setUpcomingSessions(sessionsResponse.data?.sessions || []);
+        setStats(prev => ({ ...prev, upcomingSessions: sessionsResponse.data?.sessions?.length || 0 }));
+      } catch (sessionsError) {
+        console.error('Error fetching sessions:', sessionsError);
+        setUpcomingSessions([]);
+        // Don't fail the whole dashboard if sessions API fails
+      }
+
+      // Fetch recommended seniors for junior users
+      if (user?.role === 'junior') {
+        try {
+          const response = await axios.get('/api/users/seniors?limit=3', authHeaders);
+          setRecommendedSeniors(response.data?.seniors || []);
+        } catch (seniorsError) {
+          console.error('Error fetching recommended seniors:', seniorsError);
+          setRecommendedSeniors([]);
+          // Don't fail the whole dashboard if seniors API fails
+        }
+      }
+    } catch (error) {
+      console.error('Unexpected error in fetchDashboardData:', error);
+      // Set fallback values for everything
+      setStats({ connections: 0, pendingRequests: 0, messages: 0, upcomingSessions: 0 });
+      setUpcomingSessions([]);
+      setRecommendedSeniors([]);
+    } finally {
+      setDashboardLoading(false);
+    }
+  }, [authenticated, user]);
+
   useEffect(() => {
-    // Only fetch dashboard data if:
-    // 1. User is authenticated
-    // 2. Authentication loading is complete
-    // 3. We have a user object
-    // 4. We haven't attempted to fetch data yet
-    if (authenticated && !authLoading && user && !dataFetchAttempted.current) {
+    if (authenticated) {
       fetchDashboardData();
-    } else if (!authenticated && !authLoading) {
-      // If not authenticated and not loading, redirect to login
+    } else if (!authLoading) {
       router.push('/login');
     }
-  }, [authenticated, authLoading, user, fetchDashboardData, router]);
+  }, [authenticated, authLoading, fetchDashboardData, router]);
 
-  // fetchDashboardData is defined above using useCallback
-
-  // Show loading state while authentication or data is loading
-  if (authLoading || loading) {
+  if (authLoading || dashboardLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingIndicator message="Loading dashboard..." />
+      <div className="min-h-screen flex items-center justify-center bg-[#1A0B2E]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
   }
 
-  // Show error state if authentication or data fetching failed
-  if (authError) {
-    // If authentication error, redirect to login
-    router.push('/login');
-    return null;
-  }
-  
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <ErrorDisplay error={authError || error} />
-      </div>
-    );
-  }
-  
-  // If not authenticated, don't render the dashboard
   if (!authenticated || !user) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 animate-fade-in">
-      <div className="py-10">
-        <ResponsiveContainer>
-          {/* Dashboard Header */}
-          <header className="mb-8 animate-fade-in">
-            <div className="flex justify-between items-center">
-              <div className="animate-slide-in-left">
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="mt-1 text-sm text-gray-500">
-                  Welcome back, {user.username}!
-                </p>
-              </div>
-              <div className="animate-slide-in-right">
-                <Link
-                  href="/profile/edit"
-                  className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:scale-105 transform transition-all duration-200"
+    <div className="min-h-screen bg-[#1A0B2E] text-white pt-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero / Welcome Section */}
+        <header className="mb-12">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-2">Welcome back, {user.username}!</h1>
+              <p className="text-xl text-gray-400">
+                {user.role === 'junior' 
+                  ? "Ready to level up your skills? Let's connect you with experienced mentors." 
+                  : "Ready to share your knowledge? Let's help junior developers grow."
+                }
+              </p>
+            </div>
+            <Link href="/profile/edit" className="px-6 py-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-full font-semibold hover:bg-white/20 transition-all duration-300">
+              Edit Profile
+            </Link>
+          </div>
+        </header>
+
+        {/* Stats Cards Section */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Your Progress</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard 
+              icon={<Users size={28} />} 
+              title="Total Connections" 
+              value={stats.connections}
+              helperText={stats.connections === 0 ? "Start connecting!" : "Keep growing!"}
+            />
+            <StatCard 
+              icon={<Mail size={28} />} 
+              title="Pending Requests" 
+              value={stats.pendingRequests}
+              helperText={stats.pendingRequests === 0 ? "No pending requests" : "Awaiting response"}
+            />
+            <StatCard 
+              icon={<Calendar size={28} />} 
+              title="Upcoming Sessions" 
+              value={stats.upcomingSessions}
+              helperText={stats.upcomingSessions === 0 ? "Book your first session" : "Get ready!"}
+            />
+            <StatCard 
+              icon={<Mail size={28} />} 
+              title="Unread Messages" 
+              value={stats.messages}
+              helperText={stats.messages === 0 ? "All caught up!" : "New messages"}
+            />
+          </div>
+        </section>
+
+        {/* Your Next Step Highlight Card */}
+        <section className="mb-12">
+          <NextStepCard user={user} stats={stats} />
+        </section>
+
+        {/* Upcoming Sessions Section */}
+        <section className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Upcoming Sessions</h2>
+            <Link href="/schedule" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
+              View All →
+            </Link>
+          </div>
+          {upcomingSessions.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingSessions.map((session) => (
+                <motion.div
+                  key={session._id}
+                  className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6"
+                  whileHover={{ scale: 1.02 }}
                 >
-                  Edit Profile
-                </Link>
-              </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="bg-purple-500/20 p-3 rounded-full">
+                      <Calendar size={20} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{session.mentorId?.username || 'Session'}</h3>
+                      <p className="text-gray-400 text-sm">{session.sessionDate} at {session.sessionTime}</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-400 text-sm">{session.notes || 'Mentoring session'}</p>
+                </motion.div>
+              ))}
             </div>
-          </header>
-
-          {/* Statistics Section */}
-          <div className="mb-10 animate-fade-in animation-delay-200">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Statistics</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white overflow-hidden shadow rounded-lg card-hover animate-scale-in">
-                <div className="px-4 py-5 sm:p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
-                      <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dt className="text-sm font-medium text-gray-500 truncate">Total Connections</dt>
-                      <dd className="flex items-baseline">
-                        <div className="text-2xl font-semibold text-gray-900">{stats.connections}</div>
-                      </dd>
-                    </div>
-                  </div>
-                </div>
+          ) : (
+            <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-8 text-center">
+              <div className="bg-purple-500/20 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <Calendar size={24} />
               </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg card-hover animate-scale-in animation-delay-200">
-                <div className="px-4 py-5 sm:p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
-                      <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                      </svg>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dt className="text-sm font-medium text-gray-500 truncate">Pending Requests</dt>
-                      <dd className="flex items-baseline">
-                        <div className="text-2xl font-semibold text-gray-900">{stats.pendingRequests}</div>
-                      </dd>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg card-hover animate-scale-in animation-delay-400">
-                <div className="px-4 py-5 sm:p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
-                      <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dt className="text-sm font-medium text-gray-500 truncate">Unread Messages</dt>
-                      <dd className="flex items-baseline">
-                        <div className="text-2xl font-semibold text-gray-900">{stats.messages}</div>
-                      </dd>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Connections */}
-          {recentConnections.length > 0 && (
-            <div className="mb-10">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Connections</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recentConnections.map((connection) => {
-                  const connectionUser = connection.requesterId._id === user.id
-                    ? connection.recipientId
-                    : connection.requesterId;
-                  
-                  return (
-                    <div key={connection._id} className="bg-white overflow-hidden shadow rounded-lg">
-                      <div className="px-4 py-5 sm:p-6">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0">
-                            <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                              <span className="text-indigo-800 font-medium">
-                                {connectionUser.username.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">{connectionUser.username}</h3>
-                            <p className="text-sm text-gray-500">{connectionUser.role}</p>
-                          </div>
-                        </div>
-                        <div className="mt-4">
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {connectionUser.skills.slice(0, 3).map((skill, index) => (
-                              <span
-                                key={index}
-                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                            {connectionUser.skills.length > 3 && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                +{connectionUser.skills.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex space-x-3">
-                            <Link
-                              href={`/profile/${connectionUser._id}`}
-                              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                              View Profile
-                            </Link>
-                            <Link
-                              href={`/chat/${connection._id}`}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                              Message
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <h3 className="text-xl font-semibold mb-2">No upcoming sessions</h3>
+              <p className="text-gray-400 mb-6">Book your first mentoring session to get started</p>
+              <Link 
+                href="/schedule"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full font-semibold hover:scale-105 transform transition-all duration-300"
+              >
+                Schedule Session
+              </Link>
             </div>
           )}
+        </section>
 
-          {/* Recommended Senior Developers (for junior developers only) */}
-          {user.role === 'junior' && recommendedSeniors.length > 0 && (
-            <div className="mb-10">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Recommended Senior Developers</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recommendedSeniors.map((senior) => (
-                  <div key={senior._id} className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="px-4 py-5 sm:p-6">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                            <span className="text-indigo-800 font-medium">
-                              {senior.username.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-medium text-gray-900">{senior.username}</h3>
-                          <p className="text-sm text-gray-500">Senior Developer</p>
-                        </div>
-                      </div>
-                      <div className="mt-4">
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {senior.skills.slice(0, 3).map((skill, index) => (
-                            <span
-                              key={index}
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
-                            >
-                              {skill}
-                            </span>
-                          ))}
-                          {senior.skills.length > 3 && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                              +{senior.skills.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                        <Link
-                          href={`/profile/${senior._id}`}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                          View Profile
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* Recommended Senior Developers Section */}
+        {user.role === 'junior' && (
+          <section className="mb-12">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Recommended Senior Developers</h2>
+              <Link href="/seniors" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
+                Browse All →
+              </Link>
             </div>
-          )}
+            {recommendedSeniors.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recommendedSeniors.map((senior) => <SeniorDeveloperCard key={senior._id} senior={senior} />)}
+              </div>
+            ) : (
+              <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-8 text-center">
+                <div className="bg-purple-500/20 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Users size={24} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">No senior developers available</h3>
+                <p className="text-gray-400">Check back later for new mentor opportunities</p>
+              </div>
+            )}
+          </section>
+        )}
 
-          {/* Quick Actions */}
-          <div className="mb-10">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="px-4 py-5 sm:p-6 text-center">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100">
-                    <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+        {/* Quick Actions Section */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <QuickActionCard 
+              icon={<Search size={28} />} 
+              title="Find Developers" 
+              description={`Connect with ${user.role === 'junior' ? 'senior' : 'junior'} developers`} 
+              href={user.role === 'junior' ? '/seniors' : '/juniors'} 
+            />
+            <QuickActionCard 
+              icon={<Calendar size={28} />} 
+              title="Schedule Session" 
+              description="Book a mentoring session" 
+              href="/schedule" 
+            />
+            <QuickActionCard 
+              icon={<Mail size={28} />} 
+              title="Messages" 
+              description="Check your conversations" 
+              href="/messages" 
+            />
+            <QuickActionCard 
+              icon={<BookOpen size={28} />} 
+              title="Learning Resources" 
+              description="Access learning materials" 
+              href="/resources" 
+            />
+          </div>
+        </section>
+
+        {/* Recent Activity Section */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>
+          <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
+            <div className="space-y-4">
+              {stats.connections > 0 && (
+                <div className="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
+                  <div className="bg-green-500/20 p-2 rounded-full">
+                    <Users size={16} />
                   </div>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">Find Developers</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Connect with {user.role === 'junior' ? 'senior' : 'junior'} developers
-                  </p>
-                  <div className="mt-3">
-                    <Link
-                      href={user.role === 'junior' ? '/seniors' : '/juniors'}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      Find
-                    </Link>
+                  <div>
+                    <p className="font-medium">New connection established</p>
+                    <p className="text-gray-400 text-sm">You connected with a developer</p>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="px-4 py-5 sm:p-6 text-center">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100">
-                    <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+              )}
+              {stats.pendingRequests > 0 && (
+                <div className="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
+                  <div className="bg-yellow-500/20 p-2 rounded-full">
+                    <Mail size={16} />
                   </div>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">Schedule Session</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Book a mentoring session
-                  </p>
-                  <div className="mt-3">
-                    <Link
-                      href="/schedule"
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      Schedule
-                    </Link>
+                  <div>
+                    <p className="font-medium">Connection request received</p>
+                    <p className="text-gray-400 text-sm">Someone wants to connect with you</p>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="px-4 py-5 sm:p-6 text-center">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100">
-                    <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
+              )}
+              {stats.messages > 0 && (
+                <div className="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
+                  <div className="bg-blue-500/20 p-2 rounded-full">
+                    <Mail size={16} />
                   </div>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">Learning Resources</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Access learning materials
-                  </p>
-                  <div className="mt-3">
-                    <Link
-                      href="/resources"
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      View
-                    </Link>
+                  <div>
+                    <p className="font-medium">New message received</p>
+                    <p className="text-gray-400 text-sm">You have unread messages</p>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="px-4 py-5 sm:p-6 text-center">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100">
-                    <svg className="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">Skill Assessment</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Test your coding skills
-                  </p>
-                  <div className="mt-3">
-                    <Link
-                      href="/assessment"
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      Start
-                    </Link>
-                  </div>
+              )}
+              {stats.connections === 0 && stats.pendingRequests === 0 && stats.messages === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-400">No recent activity. Start by connecting with other developers!</p>
                 </div>
-              </div>
+              )}
             </div>
           </div>
-        </ResponsiveContainer>
+        </section>
       </div>
     </div>
   );

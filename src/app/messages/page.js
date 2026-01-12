@@ -130,105 +130,97 @@ export default function Messages() {
 
   if (loading && conversations.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 animate-slide-in-left">
-          <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
-          <p className="mt-2 text-gray-600">Your conversations with mentors and mentees</p>
+      <div className="min-h-screen bg-[#1A0B2E] text-white pt-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <header className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Messages</h1>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">Your conversations with mentors and mentees</p>
+          </header>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+            <p className="mt-4 text-gray-400">Loading conversations...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 animate-fade-in">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 animate-slide-in-left">
-          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Messages
-          </h1>
-          <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-            Your conversations with other developers
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#1A0B2E] text-white pt-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Messages</h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">Your conversations with other developers</p>
+        </header>
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-8">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
+          <div className="bg-red-500/20 backdrop-blur-lg border border-red-400/50 p-4 mb-8 rounded-lg">
+            <p className="text-red-400">{error}</p>
           </div>
         )}
 
         {conversations.length === 0 ? (
-          <ul className="divide-y divide-gray-200 bg-white shadow overflow-hidden sm:rounded-md animate-fade-in animation-delay-400">
-            <div className="text-center py-12 animate-scale-in animation-delay-600">
-              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                <path d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No conversations</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                You don't have any conversations yet. Start by connecting with other developers!
-              </p>
-              <div className="mt-6">
-                <Link
-                  href="/connections"
-                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:scale-105 transform transition-all duration-200"
-                >
-                  Find Connections
-                </Link>
-              </div>
-            </div>
-          </ul>
+          <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-12 text-center">
+            <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+              <path d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0zm12 6a4 4 0 11-8 0 4 4 0 018 0zm-28 0a4 4 0 11-8 0 4 4 0 018 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <h3 className="text-lg font-medium text-white mb-2">No conversations</h3>
+            <p className="text-gray-400 mb-6">
+              You don't have any conversations yet. Start by connecting with other developers!
+            </p>
+            <Link
+              href="/connections"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full font-semibold hover:scale-105 transform transition-all duration-300"
+            >
+              Find Connections
+            </Link>
+          </div>
         ) : (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <ul className="divide-y divide-gray-200">
+          <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+            <ul className="divide-y divide-white/10">
               {conversations.map((conversation) => (
                 <li key={conversation.id}>
                   <Link
                     href={`/chat/${conversation.id}`}
-                    className="block hover:bg-gray-50 px-4 py-4 sm:px-6 card-hover"
+                    className="block hover:bg-white/5 px-6 py-4 transition-colors"
                   >
-                    <div className="px-4 py-4 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                            <span className="text-lg font-medium text-indigo-600">
-                              {conversation.otherUser.username.charAt(0)}
-                            </span>
-                          </div>
-                          <div className="ml-4">
-                            <div className="flex items-center">
-                              <h3 className="text-sm font-medium text-gray-900">
-                                {conversation.otherUser.username}
-                              </h3>
-                              {conversation.unreadCount > 0 && (
-                                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                  {conversation.unreadCount}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-500 truncate">
-                              {conversation.latestMessage ? (
-                                conversation.latestMessage.senderId === user?.id ? (
-                                  <span className="text-gray-400">You: </span>
-                                ) : null
-                              ) : null}
-                              {conversation.latestMessage ? 
-                                conversation.latestMessage.content : 
-                                'Start a conversation'}
-                            </p>
-                          </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
+                          <span className="text-lg font-medium text-white">
+                            {conversation.otherUser.username.charAt(0)}
+                          </span>
                         </div>
-                        <div className="ml-2 flex-shrink-0 flex flex-col items-end">
-                          <p className="text-xs text-gray-500">
-                            {conversation.timestamp ? formatTime(conversation.timestamp) : ''}
+                        <div className="ml-4">
+                          <div className="flex items-center">
+                            <h3 className="text-sm font-medium text-white">
+                              {conversation.otherUser.username}
+                            </h3>
+                            {conversation.unreadCount > 0 && (
+                              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-600 text-white">
+                                {conversation.unreadCount}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-400 truncate">
+                            {conversation.latestMessage ? (
+                              conversation.latestMessage.senderId === user?.id ? (
+                                <span className="text-gray-500">You: </span>
+                              ) : null
+                            ) : null}
+                            {conversation.latestMessage ? 
+                              conversation.latestMessage.content : 
+                              'Start a conversation'}
                           </p>
-                          {conversation.unreadCount > 0 && (
-                            <div className="h-2 w-2 rounded-full bg-indigo-600 mt-1"></div>
-                          )}
                         </div>
+                      </div>
+                      <div className="ml-2 flex-shrink-0 flex flex-col items-end">
+                        <p className="text-xs text-gray-400">
+                          {conversation.timestamp ? formatTime(conversation.timestamp) : ''}
+                        </p>
+                        {conversation.unreadCount > 0 && (
+                          <div className="h-2 w-2 rounded-full bg-purple-600 mt-1"></div>
+                        )}
                       </div>
                     </div>
                   </Link>

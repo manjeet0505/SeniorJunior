@@ -19,7 +19,7 @@ import CurrentYear from "@/app/components/CurrentYear";
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${jakarta.variable} font-sans antialiased bg-space-navy text-gray-300`}>
         <SmoothScroll>
           <AdvancedNavbar />
@@ -62,8 +62,8 @@ export default function RootLayout({ children }) {
                 <div>
                   <h3 className="text-sm font-semibold text-white tracking-wider uppercase">Stay Updated</h3>
                   <div className="mt-4 flex">
-                    <input type="email" placeholder="Enter your email" className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-l-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" />
-                    <button className="px-4 py-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-r-md hover:bg-white/20 transition-colors duration-300">Subscribe</button>
+                    <input type="email" placeholder="Enter your email" className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-l-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm" suppressHydrationWarning />
+                    <button className="px-4 py-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-r-md hover:bg-white/20 transition-colors duration-300" suppressHydrationWarning>Subscribe</button>
                   </div>
                 </div>
               </div>

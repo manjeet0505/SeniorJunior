@@ -80,7 +80,7 @@ function LoginForm() {
 
   return (
     <AuthLayout title="Sign In" subtitle="Welcome back! Please sign in to continue.">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" suppressHydrationWarning>
         {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         {success && <p className="text-green-400 text-sm text-center">{success}</p>}
         

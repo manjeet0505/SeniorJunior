@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,42 +6,34 @@ export async function POST(req) {
   try {
     const { messages } = await req.json();
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      console.error('GEMINI_API_KEY is not set');
+      console.error('OPENAI_API_KEY is not set');
       return new Response(JSON.stringify({ error: 'API key not configured' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // Add the system prompt here
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash-latest',
-      systemInstruction: `You are a helpful and friendly assistant for the 'Senior-Junior Connect' web application. Your purpose is to help users navigate the platform, find mentors or mentees, and understand the features available. Your tone should be encouraging and supportive. You are an expert on the platform's features, which include: user profiles, a messaging system, a scheduling tool for sessions, and a connection request system. Do not go off-topic.`,
+    const openai = new OpenAI({ apiKey });
+
+    const systemPrompt = `You are a helpful and friendly assistant for a Senior-Junior developer mentorship platform.
+Help junior developers with career guidance, learning paths, and platform usage.
+Keep answers concise, practical, and beginner-friendly.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ],
+      temperature: 0.5,
+      max_tokens: 500,
     });
 
-    const history = messages.slice(0, -1).map(m => ({
-      role: m.role === 'assistant' ? 'model' : m.role,
-      parts: [{ text: m.content }],
-    }));
+    const reply = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
 
-    const lastMessage = messages[messages.length - 1];
-
-    const chat = model.startChat({
-      history: history,
-      generationConfig: {
-        maxOutputTokens: 1000,
-      },
-    });
-
-    const result = await chat.sendMessage(lastMessage.content);
-    const response = await result.response;
-    const text = response.text();
-
-    return new Response(JSON.stringify({ text }), {
+    return new Response(JSON.stringify({ text: reply }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

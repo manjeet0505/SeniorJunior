@@ -52,62 +52,56 @@ const ScheduleSessionPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full text-gray-800 bg-gray-50">
-      <div 
-        className="relative h-72 flex items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop')" }}
-      >
-        <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="relative z-10 text-center text-white px-6">
-          <h1 className="text-4xl md:text-5xl font-extrabold">Schedule a Session</h1>
-          <p className="mt-4 text-lg text-gray-200">Book a one-on-one session with your chosen mentor.</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#1A0B2E] text-white pt-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Schedule a Session</h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">Book a one-on-one session with your chosen mentor.</p>
+        </header>
 
-      <div className="-mt-24 relative z-20 flex justify-center pb-16">
-        <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl mx-4">
-          <div className="p-8 md:p-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Details</h2>
-            <p className="text-gray-600 mb-8">Select a mentor and your preferred time to connect.</p>
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-8 md:p-12">
+            <h2 className="text-2xl font-bold text-white mb-2">Booking Details</h2>
+            <p className="text-gray-400 mb-8">Select a mentor and your preferred time to connect.</p>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="mentorId" className="block text-gray-700 font-semibold mb-2">Select Mentor</label>
-                <select id="mentorId" name="mentorId" value={formData.mentorId} onChange={handleChange} className="w-full border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 transition shadow-sm">
+                <label htmlFor="mentorId" className="block text-gray-300 font-semibold mb-2">Select Mentor</label>
+                <select id="mentorId" name="mentorId" value={formData.mentorId} onChange={handleChange} className="w-full bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 transition text-white">
                   {mentors.length > 0 ? (
                     mentors.map(mentor => (
-                      <option key={mentor._id} value={mentor._id}>
+                      <option key={mentor._id} value={mentor._id} className="bg-gray-800">
                         {mentor.username} ({mentor.skills.join(', ')})
                       </option>
                     ))
                   ) : (
-                    <option disabled>Loading mentors...</option>
+                    <option disabled className="bg-gray-800">Loading mentors...</option>
                   )}
                 </select>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="sessionDate" className="block text-gray-700 font-semibold mb-2">Select Date</label>
+                  <label htmlFor="sessionDate" className="block text-gray-300 font-semibold mb-2">Select Date</label>
                   <input 
                     type="date" 
                     id="sessionDate"
                     name="sessionDate"
                     value={formData.sessionDate}
                     onChange={handleChange}
-                    className="w-full border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 transition shadow-sm"
+                    className="w-full bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 transition text-white"
                   />
                 </div>
                 <div>
-                  <label htmlFor="sessionTime" className="block text-gray-700 font-semibold mb-2">Select Time Slot</label>
-                  <select id="sessionTime" name="sessionTime" value={formData.sessionTime} onChange={handleChange} className="w-full border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 transition shadow-sm">
-                    <option value="">Select a time</option>
-                    <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
-                    <option value="2:00 PM - 3:00 PM">2:00 PM - 3:00 PM</option>
-                    <option value="5:00 PM - 6:00 PM">5:00 PM - 6:00 PM</option>
+                  <label htmlFor="sessionTime" className="block text-gray-300 font-semibold mb-2">Select Time Slot</label>
+                  <select id="sessionTime" name="sessionTime" value={formData.sessionTime} onChange={handleChange} className="w-full bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 transition text-white">
+                    <option value="" className="bg-gray-800">Select a time</option>
+                    <option value="10:00 AM - 11:00 AM" className="bg-gray-800">10:00 AM - 11:00 AM</option>
+                    <option value="2:00 PM - 3:00 PM" className="bg-gray-800">2:00 PM - 3:00 PM</option>
+                    <option value="5:00 PM - 6:00 PM" className="bg-gray-800">5:00 PM - 6:00 PM</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label htmlFor="notes" className="block text-gray-700 font-semibold mb-2">Notes for Mentor (Optional)</label>
+                <label htmlFor="notes" className="block text-gray-300 font-semibold mb-2">Notes for Mentor (Optional)</label>
                 <textarea 
                   id="notes"
                   name="notes"
@@ -115,16 +109,16 @@ const ScheduleSessionPage = () => {
                   placeholder="What would you like to discuss?"
                   value={formData.notes}
                   onChange={handleChange}
-                  className="w-full border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 transition shadow-sm"
+                  className="w-full bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 transition text-white placeholder-gray-400"
                 ></textarea>
               </div>
-              {status.error && <p className="text-red-500 text-center font-semibold">{status.error}</p>}
-              {status.success && <p className="text-green-500 text-center font-semibold">{status.success}</p>}
+              {status.error && <p className="text-red-400 text-center font-semibold">{status.error}</p>}
+              {status.success && <p className="text-green-400 text-center font-semibold">{status.success}</p>}
               <div className="pt-4">
                 <button 
                   type="submit" 
                   disabled={status.loading}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg py-3.5 font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full py-3.5 font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {status.loading ? 'Booking...' : 'Confirm & Book Session'}
                 </button>

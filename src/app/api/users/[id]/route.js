@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
 import { verifyToken, getTokenFromRequest } from '@/lib/auth';
-import { validateUserData } from '@/utils/validation';
+import { validateUserData, validateUserUpdate } from '@/utils/validation';
 
 // GET a single user by ID
 export async function GET(request, { params }) {
@@ -167,8 +167,8 @@ export async function PUT(request, { params }) {
     const data = await request.json();
     
     // Validate input
-    const validation = validateUserData(data);
-    if (!validation.isValid) {
+    const validation = validateUserUpdate(data);
+    if (!validation.valid) {
       return NextResponse.json({ error: 'Validation failed', errors: validation.errors }, { status: 400 });
     }
     
@@ -184,7 +184,15 @@ export async function PUT(request, { params }) {
     if (data.email) user.email = data.email;
     if (data.role) user.role = data.role;
     if (data.skills) user.skills = data.skills;
+    if (data.learningSkills) user.learningSkills = data.learningSkills;
+    if (data.experienceLevel !== undefined) user.experienceLevel = data.experienceLevel;
+    if (data.yearsOfExperience !== undefined) user.yearsOfExperience = data.yearsOfExperience;
+    if (data.lookingForMentorshipIn) user.lookingForMentorshipIn = data.lookingForMentorshipIn;
+    if (data.availability !== undefined) user.availability = data.availability;
+    if (data.status) user.status = data.status;
+    if (data.social) user.social = { ...(user.social || {}), ...data.social };
     if (data.bio) user.bio = data.bio;
+    if (data.profilePicture !== undefined) user.profilePicture = data.profilePicture;
     
     // Save updated user
     await user.save();
@@ -196,6 +204,69 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ 
       message: 'Profile updated successfully', 
       user: updatedUser 
+    }, { status: 200 });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+  }
+}
+
+// PATCH to partially update a user
+export async function PATCH(request, { params }) {
+  try {
+    await connectDB();
+
+    const { id } = await params;
+
+    const token = getTokenFromRequest(request);
+    if (!token) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = verifyToken(token);
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    if (decodedToken.id !== id) {
+      return NextResponse.json({ error: 'Unauthorized to update this profile' }, { status: 403 });
+    }
+
+    const data = await request.json();
+    const validation = validateUserUpdate(data);
+    if (!validation.valid) {
+      return NextResponse.json({ error: 'Validation failed', errors: validation.errors }, { status: 400 });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    if (data.username !== undefined) user.username = data.username;
+    if (data.email !== undefined) user.email = data.email;
+    if (data.role !== undefined) user.role = data.role;
+    if (data.skills !== undefined) user.skills = data.skills;
+    if (data.learningSkills !== undefined) user.learningSkills = data.learningSkills;
+    if (data.experienceLevel !== undefined) user.experienceLevel = data.experienceLevel;
+    if (data.yearsOfExperience !== undefined) user.yearsOfExperience = data.yearsOfExperience;
+    if (data.lookingForMentorshipIn !== undefined) user.lookingForMentorshipIn = data.lookingForMentorshipIn;
+    if (data.availability !== undefined) user.availability = data.availability;
+    if (data.status !== undefined) user.status = data.status;
+    if (data.social !== undefined) user.social = { ...(user.social || {}), ...data.social };
+    if (data.bio !== undefined) user.bio = data.bio;
+    if (data.profilePicture !== undefined) user.profilePicture = data.profilePicture;
+
+    await user.save();
+
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+
+    return NextResponse.json({
+      message: 'Profile updated successfully',
+      user: updatedUser
     }, { status: 200 });
   } catch (error) {
     console.error('Error updating user:', error);

@@ -67,12 +67,13 @@ export default function Home() {
             </motion.div>
             {specialists.map((specialist, index) => {
               const angle = (index / specialists.length) * 2 * Math.PI;
-              const x = 250 + 200 * Math.cos(angle) - 50; // 50 is half card width
-              const y = 250 + 200 * Math.sin(angle) - 60; // 60 is half card height
+              const x = Number((250 + 200 * Math.cos(angle) - 50).toFixed(4)); // 50 is half card width
+              const y = Number((250 + 200 * Math.sin(angle) - 60).toFixed(4)); // 60 is half card height
               return (
                 <motion.div
                   key={specialist.id}
                   className="absolute"
+                  suppressHydrationWarning
                   initial={{ x, y, opacity: 0, scale: 0.5 }}
                   animate={{
                     opacity: 1,

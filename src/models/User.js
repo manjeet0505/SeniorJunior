@@ -33,6 +33,36 @@ const UserSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  learningSkills: {
+    type: [String],
+    default: [],
+  },
+  experienceLevel: {
+    type: String,
+    default: '',
+  },
+  yearsOfExperience: {
+    type: Number,
+    default: 0,
+  },
+  lookingForMentorshipIn: {
+    type: [String],
+    default: [],
+  },
+  availability: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null,
+  },
+  status: {
+    type: String,
+    enum: ['open', 'busy', 'offline'],
+    default: 'offline',
+  },
+  social: {
+    github: { type: String, default: '' },
+    linkedin: { type: String, default: '' },
+    website: { type: String, default: '' },
+  },
   bio: {
     type: String,
     maxlength: [500, 'Bio cannot be more than 500 characters'],

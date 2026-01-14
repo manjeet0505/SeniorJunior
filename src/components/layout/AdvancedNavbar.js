@@ -15,7 +15,16 @@ export default function AdvancedNavbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { isMenuOpen, toggleMenu, closeMenu, isMobileOrTablet } = useResponsiveNavigation();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    const userData = localStorage.getItem('user');
+    if (!userData) return null;
+    try {
+      return JSON.parse(userData);
+    } catch {
+      return null;
+    }
+  });
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -40,13 +49,14 @@ export default function AdvancedNavbar() {
 
   // Navigation items based on user role
   const getNavigationItems = () => {
+    const profileHref = user?.id || user?._id ? `/profile/${user?.id || user?._id}` : '/profile/edit';
     const commonItems = [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Connections', href: '/connections' },
       { name: 'Messages', href: '/messages' },
       { name: 'Schedule', href: '/schedule' },
       { name: 'Resources', href: '/resources' },
-      { name: 'Profile', href: '/profile/edit' },
+      { name: 'Profile', href: profileHref },
     ];
 
     // Add role-specific items

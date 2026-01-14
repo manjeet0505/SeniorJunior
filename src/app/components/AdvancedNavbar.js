@@ -9,6 +9,8 @@ export default function AdvancedNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  const profileHref = user?.id || user?._id ? `/profile/${user?.id || user?._id}` : "/profile/edit";
+
   useEffect(() => {
     setIsClient(true);
     const token = localStorage.getItem("token");
@@ -58,7 +60,7 @@ export default function AdvancedNavbar() {
           <Link href="/schedule" className={`${linkClass} px-3 py-2 rounded-md text-sm font-medium`}>Schedule</Link>
           {isClient && isLoggedIn ? (
             <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-700">
-              <Link href="/profile/edit" className="text-gray-300 bg-white/10 hover:bg-white/20 px-5 py-2 rounded-full text-sm font-medium border border-transparent transition-all duration-200">Profile</Link>
+              <Link href={profileHref} className="text-gray-300 bg-white/10 hover:bg-white/20 px-5 py-2 rounded-full text-sm font-medium border border-transparent transition-all duration-200">Profile</Link>
               <button onClick={handleSignOut} className="text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-5 py-2 rounded-full text-sm font-medium transition-all duration-200">Sign Out</button>
             </div>
           ) : (
@@ -91,7 +93,7 @@ export default function AdvancedNavbar() {
             <Link href="/schedule" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10" onClick={() => setIsMobileMenuOpen(false)}>Schedule</Link>
             {isClient && isLoggedIn ? (
               <>
-                <Link href="/profile/edit" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10" onClick={() => setIsMobileMenuOpen(false)}>Profile</Link>
+                <Link href={profileHref} className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10" onClick={() => setIsMobileMenuOpen(false)}>Profile</Link>
                 <button onClick={() => { setIsMobileMenuOpen(false); handleSignOut(); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 mt-1">Sign Out</button>
               </>
             ) : (

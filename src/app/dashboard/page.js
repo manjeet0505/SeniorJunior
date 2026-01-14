@@ -239,8 +239,11 @@ export default function Dashboard() {
                 }
               </p>
             </div>
-            <Link href="/profile/edit" className="px-6 py-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-full font-semibold hover:bg-white/20 transition-all duration-300">
-              Edit Profile
+            <Link
+              href={user?.id ? `/profile/${user.id}` : '/profile/edit'}
+              className="px-6 py-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-full font-semibold hover:bg-white/20 transition-all duration-300"
+            >
+              Profile
             </Link>
           </div>
         </header>

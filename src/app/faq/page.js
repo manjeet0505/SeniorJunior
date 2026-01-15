@@ -30,7 +30,7 @@ export default function FAQPage() {
   const faqItems = [
     {
       question: "What is SeniorJunior Connect?",
-      answer: "SeniorJunior Connect is a platform designed to bridge the gap between experienced developers and those just starting their journey. We facilitate mentorship connections, provide structured learning paths, and foster a supportive community for developers at all stages of their careers."
+      answer: "SeniorJunior Connect is a platform designed to bridge the gap between experienced developers and those just starting their journey. We facilitate mentorship connections, provide structured learning paths, and foster a supportive community for developers at all stages of their journey."
     },
     {
       question: "How does the mentorship matching work?",

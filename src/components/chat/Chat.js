@@ -251,7 +251,7 @@ export default function Chat({ onClose }) {
             </div>
             <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-4 max-w-sm mx-auto">
               <p className="text-gray-300">
-                Hi 👋 I'm your Senior-Junior assistant. Ask me about mentors, careers, or learning paths.
+                Hi 👋 I'm your Senior-Junior assistant. Ask me about mentors or learning paths.
               </p>
             </div>
           </div>

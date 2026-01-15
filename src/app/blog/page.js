@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import AISummaryModal from '@/components/blog/AISummaryModal';
+import { Sparkles } from 'lucide-react';
 
 // Sample blog data (replace with real data/API later)
 const featuredPost = {
@@ -21,6 +24,16 @@ const blogPosts = [
     readTime: '4 min read',
     category: 'Juniors',
     href: '/blog/5-signals-senior-mentor',
+    aiSummary: `• You're stuck on the same problems for weeks
+• Your code works but you don't know why
+• You want to understand trade-offs, not just solutions
+• You're thinking about system design and architecture
+• You're ready to learn from others' mistakes`,
+    aiSummaryMeta: {
+      generatedAt: new Date('2024-01-15'),
+      model: 'gpt-4-turbo-preview',
+      roleAdapted: false,
+    },
   },
   {
     id: 2,
@@ -29,6 +42,16 @@ const blogPosts = [
     readTime: '6 min read',
     category: 'Seniors',
     href: '/blog/mentoring-without-burnout',
+    aiSummary: `• Set clear boundaries and session limits
+• Use templates for common junior questions
+• Leverage AI for preliminary code reviews
+• Focus on principles, not just fixes
+• Build a knowledge base to scale your impact`,
+    aiSummaryMeta: {
+      generatedAt: new Date('2024-01-14'),
+      model: 'gpt-4-turbo-preview',
+      roleAdapted: true,
+    },
   },
   {
     id: 3,
@@ -37,6 +60,7 @@ const blogPosts = [
     readTime: '5 min read',
     category: 'AI',
     href: '/blog/ai-mentorship-copilot',
+    aiSummary: null, // No summary yet
   },
   {
     id: 4,
@@ -45,6 +69,16 @@ const blogPosts = [
     readTime: '7 min read',
     category: 'Career',
     href: '/blog/junior-to-confident-90-day',
+    aiSummary: `• Weeks 1-2: Master your stack fundamentals
+• Weeks 3-4: Contribute to production features
+• Weeks 5-6: Lead a small project end-to-end
+• Weeks 7-8: Mentor another junior
+• Weeks 9-10: Present your work to the team`,
+    aiSummaryMeta: {
+      generatedAt: new Date('2024-01-13'),
+      model: 'gpt-4-turbo-preview',
+      roleAdapted: false,
+    },
   },
   {
     id: 5,
@@ -53,67 +87,122 @@ const blogPosts = [
     readTime: '5 min read',
     category: 'Mentorship',
     href: '/blog/run-compound-mentorship-session',
+    aiSummary: null,
   },
 ];
 
 const categories = ['All', 'Juniors', 'Seniors', 'Mentorship', 'Career', 'AI'];
 
 // Blog Card Components
-export function StandardBlogCard({ post, index }) {
+export function StandardBlogCard({ post, index, userRole }) {
+  const [showSummary, setShowSummary] = useState(false);
+  
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 + index * 0.08, duration: 0.6, ease: 'easeOut' }}
-      whileHover={{ y: -4 }}
-      className="group rounded-2xl border border-white/10 bg-black/30 backdrop-blur-xl p-6 transition-all duration-300 hover:border-white/20"
-    >
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs font-medium text-white/70">
-          {post.category}
-        </span>
-        <span className="text-xs text-white/50">{post.readTime}</span>
-      </div>
-      <h3 className="text-base font-semibold text-white mb-2 group-hover:text-white/90 transition-colors">
-        {post.title}
-      </h3>
-      <p className="text-sm text-white/60 mb-4">{post.insight}</p>
-      <Link
-        href={post.href}
-        className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors"
+    <>
+      <motion.article
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 + index * 0.08, duration: 0.6, ease: 'easeOut' }}
+        whileHover={{ y: -4 }}
+        className="group rounded-2xl border border-white/10 bg-black/30 backdrop-blur-xl p-6 transition-all duration-300 hover:border-white/20"
       >
-        Read <span className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
-      </Link>
-    </motion.article>
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs font-medium text-white/70">
+            {post.category}
+          </span>
+          <span className="text-xs text-white/50">{post.readTime}</span>
+        </div>
+        <h3 className="text-base font-semibold text-white mb-2 group-hover:text-white/90 transition-colors">
+          {post.title}
+        </h3>
+        <p className="text-sm text-white/60 mb-4">{post.insight}</p>
+        
+        <div className="flex items-center justify-between">
+          <Link
+            href={post.href}
+            className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors"
+          >
+            Read <span className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
+          </Link>
+          
+          {post.aiSummary && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowSummary(true)}
+              className="inline-flex items-center gap-1 rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-1 text-xs font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
+            >
+              <Sparkles className="h-3 w-3" />
+              AI Summary
+            </motion.button>
+          )}
+        </div>
+      </motion.article>
+      
+      <AISummaryModal
+        isOpen={showSummary}
+        onClose={() => setShowSummary(false)}
+        summary={post.aiSummary}
+        meta={post.aiSummaryMeta}
+        userRole={userRole}
+      />
+    </>
   );
 }
 
-export function FeaturedBlogCard({ post }) {
+export function FeaturedBlogCard({ post, userRole }) {
+  const [showSummary, setShowSummary] = useState(false);
+  
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
-      whileHover={{ y: -4 }}
-      className="group rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl p-8 sm:p-10 transition-all duration-300 hover:border-white/20"
-    >
-      <div className="flex items-center gap-3 mb-4">
-        <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70">
-          {post.tag}
-        </span>
-        <span className="text-xs text-white/50">{post.readTime}</span>
-      </div>
-      <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4 group-hover:text-white/90 transition-colors">
-        {post.title}
-      </h2>
-      <p className="text-sm sm:text-base text-white/70 mb-6 leading-relaxed">{post.summary}</p>
-      <Link
-        href={post.href}
-        className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors"
+    <>
+      <motion.article
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
+        whileHover={{ y: -4 }}
+        className="group rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl p-8 sm:p-10 transition-all duration-300 hover:border-white/20"
       >
-        Read article <span className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
-      </Link>
-    </motion.article>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70">
+            {post.tag}
+          </span>
+          <span className="text-xs text-white/50">{post.readTime}</span>
+        </div>
+        <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4 group-hover:text-white/90 transition-colors">
+          {post.title}
+        </h2>
+        <p className="text-sm sm:text-base text-white/70 mb-6 leading-relaxed">{post.summary}</p>
+        
+        <div className="flex items-center justify-between">
+          <Link
+            href={post.href}
+            className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors"
+          >
+            Read article <span className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
+          </Link>
+          
+          {post.aiSummary && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowSummary(true)}
+              className="inline-flex items-center gap-1 rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-sm font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
+            >
+              <Sparkles className="h-4 w-4" />
+              AI Summary
+            </motion.button>
+          )}
+        </div>
+      </motion.article>
+      
+      <AISummaryModal
+        isOpen={showSummary}
+        onClose={() => setShowSummary(false)}
+        summary={post.aiSummary}
+        meta={post.aiSummaryMeta}
+        userRole={userRole}
+      />
+    </>
   );
 }
 
@@ -134,6 +223,9 @@ export function CompactBlogCard({ post }) {
 }
 
 export default function BlogPage() {
+  // Mock user role - in real app, get from auth context
+  const [userRole] = useState('junior'); // or 'senior'
+  
   return (
     <div className="relative overflow-hidden">
       {/* Background gradient orbs */}
@@ -192,7 +284,7 @@ export default function BlogPage() {
 
         {/* Featured Blog Section */}
         <div className="mt-14">
-          <FeaturedBlogCard post={featuredPost} />
+          <FeaturedBlogCard post={featuredPost} userRole={userRole} />
         </div>
 
         {/* Category Filters */}
@@ -221,7 +313,7 @@ export default function BlogPage() {
         {/* Blog Grid */}
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogPosts.map((post, index) => (
-            <StandardBlogCard key={post.id} post={post} index={index} />
+            <StandardBlogCard key={post.id} post={post} index={index} userRole={userRole} />
           ))}
         </div>
 
@@ -233,7 +325,7 @@ export default function BlogPage() {
             transition={{ delay: 0.5, duration: 0.6, ease: 'easeOut' }}
             className="mt-20 text-center"
           >
-            <p className="text-white/60">We’re crafting high-signal mentorship and AI learning content. Stay tuned.</p>
+            <p className="text-white/60">We're crafting high-signal mentorship and AI learning content. Stay tuned.</p>
           </motion.div>
         )}
       </motion.div>

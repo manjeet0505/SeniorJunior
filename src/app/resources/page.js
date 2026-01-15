@@ -331,41 +331,41 @@ export default function ResourcesPage() {
           </div>
         </section>
 
-        <section className="mb-10">
+        <section className="pb-16">
           <div className="flex items-end justify-between gap-4 mb-4">
             <div>
-              <h2 className="text-2xl font-extrabold">{recommendedTitle}</h2>
-              <p className="text-gray-400">{recommendedSubtitle}</p>
+              <h2 className="text-2xl font-extrabold">Browse</h2>
+              <p className="text-gray-400">
+                {role === 'senior'
+                  ? 'Advanced resources and senior-curated recommendations for juniors.'
+                  : 'Beginner-friendly resources with save & view tracking.'}
+              </p>
             </div>
           </div>
 
-          {loadingRecommended ? (
+          {loadingList ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 3 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
-          ) : recommended.length ? (
+          ) : resources.length ? (
             <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recommended.map((r) => (
-                <div key={r.id} className="space-y-2">
-                  <div className="text-xs text-purple-200/90 bg-purple-500/10 border border-purple-500/20 rounded-xl px-3 py-2">
-                    {r.explanation || 'Recommended based on your activity.'}
-                  </div>
-                  <ResourceCard
-                    resource={r}
-                    role={role}
-                    onSave={() => toggleSave(r.id)}
-                    onExplore={() => onExplore(r)}
-                    onSummary={() => onOpenSummary(r)}
-                    onRecommend={() => toggleRecommend(r.id)}
-                  />
-                </div>
+              {resources.map((r) => (
+                <ResourceCard
+                  key={r.id}
+                  resource={r}
+                  role={role}
+                  onSave={() => toggleSave(r.id)}
+                  onExplore={() => onExplore(r)}
+                  onSummary={() => onOpenSummary(r)}
+                  onRecommend={() => toggleRecommend(r.id)}
+                />
               ))}
             </motion.div>
           ) : (
             <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-8 text-gray-300">
-              No recommendations yet. View a few resources and we’ll personalize this.
+              No resources match your filters. Try clearing filters or searching a broader term.
             </div>
           )}
         </section>
@@ -402,41 +402,41 @@ export default function ResourcesPage() {
           </section>
         ) : null}
 
-        <section className="pb-16">
+        <section className="mb-10">
           <div className="flex items-end justify-between gap-4 mb-4">
             <div>
-              <h2 className="text-2xl font-extrabold">Browse</h2>
-              <p className="text-gray-400">
-                {role === 'senior'
-                  ? 'Advanced resources and senior-curated recommendations for juniors.'
-                  : 'Beginner-friendly resources with save & view tracking.'}
-              </p>
+              <h2 className="text-2xl font-extrabold">{recommendedTitle}</h2>
+              <p className="text-gray-400">{recommendedSubtitle}</p>
             </div>
           </div>
 
-          {loadingList ? (
+          {loadingRecommended ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 3 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
-          ) : resources.length ? (
+          ) : recommended.length ? (
             <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {resources.map((r) => (
-                <ResourceCard
-                  key={r.id}
-                  resource={r}
-                  role={role}
-                  onSave={() => toggleSave(r.id)}
-                  onExplore={() => onExplore(r)}
-                  onSummary={() => onOpenSummary(r)}
-                  onRecommend={() => toggleRecommend(r.id)}
-                />
+              {recommended.map((r) => (
+                <div key={r.id} className="space-y-2">
+                  <div className="text-xs text-purple-200/90 bg-purple-500/10 border border-purple-500/20 rounded-xl px-3 py-2">
+                    {r.explanation || 'Recommended based on your activity.'}
+                  </div>
+                  <ResourceCard
+                    resource={r}
+                    role={role}
+                    onSave={() => toggleSave(r.id)}
+                    onExplore={() => onExplore(r)}
+                    onSummary={() => onOpenSummary(r)}
+                    onRecommend={() => toggleRecommend(r.id)}
+                  />
+                </div>
               ))}
             </motion.div>
           ) : (
             <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-8 text-gray-300">
-              No resources match your filters. Try clearing filters or searching a broader term.
+              No recommendations yet. View a few resources and we’ll personalize this.
             </div>
           )}
         </section>

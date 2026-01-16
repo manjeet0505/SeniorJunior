@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
+import connectDB from '@/lib/db';
 import Blog from '@/models/Blog';
 import { verifyToken } from '@/lib/auth';
 import OpenAI from 'openai';

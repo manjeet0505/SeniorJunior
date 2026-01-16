@@ -2,333 +2,288 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import AISummaryModal from '@/components/blog/AISummaryModal';
-import { Sparkles } from 'lucide-react';
-
-// Sample blog data (replace with real data/API later)
-const featuredPost = {
-  id: 'featured',
-  tag: 'Featured',
-  title: 'Mentorship at Scale: How AI Turns Conversations into Career Momentum',
-  summary: 'Why most mentorship fails to compound—and how structured AI-driven loops turn guidance into measurable outcomes.',
-  readTime: '8 min read',
-  href: '/blog/mentorship-at-scale',
-};
-
-const blogPosts = [
-  {
-    id: 1,
-    title: '5 Signals You’re Ready for a Senior Mentor',
-    insight: 'Clarity beats speed—know when to seek guidance.',
-    readTime: '4 min read',
-    category: 'Juniors',
-    href: '/blog/5-signals-senior-mentor',
-    aiSummary: `• You're stuck on the same problems for weeks
-• Your code works but you don't know why
-• You want to understand trade-offs, not just solutions
-• You're thinking about system design and architecture
-• You're ready to learn from others' mistakes`,
-    aiSummaryMeta: {
-      generatedAt: new Date('2024-01-15'),
-      model: 'gpt-4-turbo-preview',
-      roleAdapted: false,
-    },
-  },
-  {
-    id: 2,
-    title: 'Mentoring Without Burnout: A Senior’s Playbook',
-    insight: 'Leverage your time with structure and AI continuity.',
-    readTime: '6 min read',
-    category: 'Seniors',
-    href: '/blog/mentoring-without-burnout',
-    aiSummary: `• Set clear boundaries and session limits
-• Use templates for common junior questions
-• Leverage AI for preliminary code reviews
-• Focus on principles, not just fixes
-• Build a knowledge base to scale your impact`,
-    aiSummaryMeta: {
-      generatedAt: new Date('2024-01-14'),
-      model: 'gpt-4-turbo-preview',
-      roleAdapted: true,
-    },
-  },
-  {
-    id: 3,
-    title: 'AI as a Mentorship Co-Pilot, Not Replacement',
-    insight: 'Use AI to summarize, recommend, and track—humans guide.',
-    readTime: '5 min read',
-    category: 'AI',
-    href: '/blog/ai-mentorship-copilot',
-    aiSummary: null, // No summary yet
-  },
-  {
-    id: 4,
-    title: 'From Junior to Confident: A 90-Day Roadmap',
-    insight: 'Weekly milestones that turn ambiguity into momentum.',
-    readTime: '7 min read',
-    category: 'Career',
-    href: '/blog/junior-to-confident-90-day',
-    aiSummary: `• Weeks 1-2: Master your stack fundamentals
-• Weeks 3-4: Contribute to production features
-• Weeks 5-6: Lead a small project end-to-end
-• Weeks 7-8: Mentor another junior
-• Weeks 9-10: Present your work to the team`,
-    aiSummaryMeta: {
-      generatedAt: new Date('2024-01-13'),
-      model: 'gpt-4-turbo-preview',
-      roleAdapted: false,
-    },
-  },
-  {
-    id: 5,
-    title: 'How to Run a Mentorship Session That Compounds',
-    insight: 'Structure your 1:1s for continuity and outcomes.',
-    readTime: '5 min read',
-    category: 'Mentorship',
-    href: '/blog/run-compound-mentorship-session',
-    aiSummary: null,
-  },
-];
-
-const categories = ['All', 'Juniors', 'Seniors', 'Mentorship', 'Career', 'AI'];
-
-// Blog Card Components
-export function StandardBlogCard({ post, index, userRole }) {
-  const [showSummary, setShowSummary] = useState(false);
-  
-  return (
-    <>
-      <motion.article
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 + index * 0.08, duration: 0.6, ease: 'easeOut' }}
-        whileHover={{ y: -4 }}
-        className="group rounded-2xl border border-white/10 bg-black/30 backdrop-blur-xl p-6 transition-all duration-300 hover:border-white/20"
-      >
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs font-medium text-white/70">
-            {post.category}
-          </span>
-          <span className="text-xs text-white/50">{post.readTime}</span>
-        </div>
-        <h3 className="text-base font-semibold text-white mb-2 group-hover:text-white/90 transition-colors">
-          {post.title}
-        </h3>
-        <p className="text-sm text-white/60 mb-4">{post.insight}</p>
-        
-        <div className="flex items-center justify-between">
-          <Link
-            href={post.href}
-            className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors"
-          >
-            Read <span className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
-          </Link>
-          
-          {post.aiSummary && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowSummary(true)}
-              className="inline-flex items-center gap-1 rounded-full border border-purple-500/20 bg-purple-500/10 px-2 py-1 text-xs font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
-            >
-              <Sparkles className="h-3 w-3" />
-              AI Summary
-            </motion.button>
-          )}
-        </div>
-      </motion.article>
-      
-      <AISummaryModal
-        isOpen={showSummary}
-        onClose={() => setShowSummary(false)}
-        summary={post.aiSummary}
-        meta={post.aiSummaryMeta}
-        userRole={userRole}
-      />
-    </>
-  );
-}
-
-export function FeaturedBlogCard({ post, userRole }) {
-  const [showSummary, setShowSummary] = useState(false);
-  
-  return (
-    <>
-      <motion.article
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
-        whileHover={{ y: -4 }}
-        className="group rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl p-8 sm:p-10 transition-all duration-300 hover:border-white/20"
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70">
-            {post.tag}
-          </span>
-          <span className="text-xs text-white/50">{post.readTime}</span>
-        </div>
-        <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4 group-hover:text-white/90 transition-colors">
-          {post.title}
-        </h2>
-        <p className="text-sm sm:text-base text-white/70 mb-6 leading-relaxed">{post.summary}</p>
-        
-        <div className="flex items-center justify-between">
-          <Link
-            href={post.href}
-            className="inline-flex items-center text-sm font-medium text-white hover:text-white/80 transition-colors"
-          >
-            Read article <span className="ml-1 transition-transform group-hover:translate-x-0.5">→</span>
-          </Link>
-          
-          {post.aiSummary && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowSummary(true)}
-              className="inline-flex items-center gap-1 rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-sm font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
-            >
-              <Sparkles className="h-4 w-4" />
-              AI Summary
-            </motion.button>
-          )}
-        </div>
-      </motion.article>
-      
-      <AISummaryModal
-        isOpen={showSummary}
-        onClose={() => setShowSummary(false)}
-        summary={post.aiSummary}
-        meta={post.aiSummaryMeta}
-        userRole={userRole}
-      />
-    </>
-  );
-}
-
-export function CompactBlogCard({ post }) {
-  return (
-    <motion.article
-      whileHover={{ y: -2 }}
-      className="group rounded-xl border border-white/10 bg-black/30 backdrop-blur-xl p-4 transition-all duration-300 hover:border-white/20"
-    >
-      <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-white/70 mb-2">
-        {post.category}
-      </span>
-      <h4 className="text-sm font-medium text-white group-hover:text-white/90 transition-colors line-clamp-2">
-        {post.title}
-      </h4>
-    </motion.article>
-  );
-}
+import { useState, useEffect } from 'react';
+import { Calendar, Clock, ArrowRight, Tag } from 'lucide-react';
 
 export default function BlogPage() {
-  // Mock user role - in real app, get from auth context
-  const [userRole] = useState('junior'); // or 'senior'
-  
-  return (
-    <div className="relative overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="pointer-events-none absolute inset-0">
-        <motion.div
-          animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-24 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-purple-500/20 blur-3xl"
-        />
-        <motion.div
-          animate={{ x: [0, -25, 0], y: [0, 15, 0] }}
-          transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-40 -left-24 h-[520px] w-[520px] rounded-full bg-blue-500/15 blur-3xl"
-        />
-        <motion.div
-          animate={{ x: [0, 20, 0], y: [0, -10, 0] }}
-          transition={{ duration: 24, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute bottom-0 right-0 h-[520px] w-[520px] rounded-full bg-indigo-500/10 blur-3xl"
-        />
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/blogs');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch blogs');
+        }
+        
+        const data = await response.json();
+        setBlogs(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
+  // Filter blogs based on selected category
+  const filteredBlogs = selectedCategory === 'All' 
+    ? blogs 
+    : blogs.filter(blog => blog.tags?.includes(selectedCategory.toLowerCase()));
+
+  // Get unique categories from tags
+  const categories = ['All', ...new Set(blogs.flatMap(blog => blog.tags || []))];
+
+  // Featured blog (first one or marked as featured)
+  const featuredBlog = blogs.find(blog => blog.featured) || blogs[0];
+  const standardBlogs = filteredBlogs.filter(blog => blog !== featuredBlog);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white px-4 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-800 rounded w-48 mb-8"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+              <div className="h-96 bg-gray-800 rounded-xl"></div>
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-800 rounded"></div>
+                <div className="h-4 bg-gray-800 rounded w-5/6"></div>
+                <div className="h-32 bg-gray-800 rounded"></div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="h-80 bg-gray-800 rounded-xl"></div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
+    );
+  }
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20"
-      >
-        {/* Hero Section */}
-        <div className="max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6, ease: 'easeOut' }}
-            className="inline-flex items-center rounded-full border border-white/10 bg-black/30 backdrop-blur-xl px-3 py-1 text-xs text-white/70"
-          >
-            Thought Leadership
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6, ease: 'easeOut' }}
-            className="mt-6 text-4xl sm:text-5xl font-semibold tracking-tight text-white"
-          >
-            Insights from
-            <span className="text-white/70"> Mentors & Builders</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6, ease: 'easeOut' }}
-            className="mt-6 text-base sm:text-lg leading-relaxed text-white/70"
-          >
-            Learn how AI-powered mentorship turns conversations into career momentum. For juniors seeking clarity and seniors mentoring at scale.
-          </motion.p>
-        </div>
-
-        {/* Featured Blog Section */}
-        <div className="mt-14">
-          <FeaturedBlogCard post={featuredPost} userRole={userRole} />
-        </div>
-
-        {/* Category Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6, ease: 'easeOut' }}
-          className="mt-14 flex flex-wrap gap-2"
-        >
-          {categories.map((cat) => (
-            <motion.button
-              key={cat}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium transition-all ${
-                cat === 'All'
-                  ? 'border-white/20 bg-white/10 text-white'
-                  : 'border-white/10 bg-black/30 backdrop-blur-xl text-white/70 hover:border-white/20 hover:bg-white/5 hover:text-white/80'
-              }`}
-            >
-              {cat}
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Blog Grid */}
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {blogPosts.map((post, index) => (
-            <StandardBlogCard key={post.id} post={post} index={index} userRole={userRole} />
-          ))}
-        </div>
-
-        {/* Empty State (shown when no posts) */}
-        {blogPosts.length === 0 && (
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white px-4 py-8">
+        <div className="max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6, ease: 'easeOut' }}
-            className="mt-20 text-center"
+            transition={{ duration: 0.6 }}
           >
-            <p className="text-white/60">We're crafting high-signal mentorship and AI learning content. Stay tuned.</p>
+            <h1 className="text-2xl font-semibold mb-4 text-red-400">Failed to load blogs</h1>
+            <p className="text-gray-400 mb-6">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white px-4 py-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+            Blog
+          </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            High-signal insights on mentorship, AI, and engineering growth
+          </p>
+        </motion.div>
+
+        {/* Featured Post */}
+        {featuredBlog && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="mb-16"
+          >
+            <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-800 hover:border-gray-700 transition-all duration-500">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div className="p-8 md:p-12">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-medium rounded-full">
+                    Featured
+                  </span>
+                  {featuredBlog.featured && (
+                    <span className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-300 text-xs font-medium rounded-full">
+                      ⭐ Must Read
+                    </span>
+                  )}
+                </div>
+                
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight group-hover:text-white transition-colors">
+                  {featuredBlog.title}
+                </h2>
+                
+                <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                  {featuredBlog.excerpt}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {new Date(featuredBlog.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {featuredBlog.readTime}
+                    </div>
+                  </div>
+                  
+                  <Link
+                    href={`/blog/${featuredBlog.slug}`}
+                    className="inline-flex items-center px-6 py-3 bg-white text-black font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 group-hover:scale-105"
+                  >
+                    Read Article
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </div>
+
+                {/* Tags */}
+                {featuredBlog.tags && featuredBlog.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-6">
+                    {featuredBlog.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium"
+                      >
+                        <Tag className="w-3 h-3 mr-1" />
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </motion.div>
         )}
-      </motion.div>
+
+        {/* Category Filter */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-10"
+        >
+          <div className="flex flex-wrap gap-3 justify-center">
+            {categories.map((cat) => (
+              <motion.button
+                key={cat}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                  cat === selectedCategory
+                    ? 'bg-white text-black border-white'
+                    : 'border-gray-700 bg-gray-900 text-gray-300 hover:border-gray-600 hover:text-white'
+                } border`}
+              >
+                {cat}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Blog Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {standardBlogs.map((blog, index) => (
+            <motion.div
+              key={blog._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
+              className="group bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl border border-gray-800 hover:border-gray-700 transition-all duration-300 overflow-hidden"
+            >
+              <div className="p-6">
+                {/* Tags */}
+                {blog.tags && blog.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {blog.tags.slice(0, 2).map((tag, tagIndex) => (
+                      <span
+                        key={tagIndex}
+                        className="inline-flex items-center px-2 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium"
+                      >
+                        <Tag className="w-3 h-3 mr-1" />
+                        {tag}
+                      </span>
+                    ))}
+                    {blog.tags.length > 2 && (
+                      <span className="text-xs text-gray-500">+{blog.tags.length - 2}</span>
+                    )}
+                  </div>
+                )}
+                
+                <h3 className="text-xl font-bold mb-3 leading-tight group-hover:text-white transition-colors">
+                  {blog.title}
+                </h3>
+                
+                <p className="text-gray-400 mb-4 line-clamp-3 leading-relaxed">
+                  {blog.excerpt}
+                </p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {new Date(blog.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {blog.readTime}
+                    </div>
+                  </div>
+                  
+                  <Link
+                    href={`/blog/${blog.slug}`}
+                    className="inline-flex items-center px-4 py-2 bg-gray-800 text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-300 group-hover:scale-105"
+                  >
+                    Read
+                    <ArrowRight className="w-3 h-3 ml-1" />
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {filteredBlogs.length === 0 && !loading && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center py-20"
+          >
+            <p className="text-gray-400 text-lg">
+              No blogs found for "{selectedCategory}"
+            </p>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

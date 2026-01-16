@@ -12,27 +12,30 @@ const blogSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
   },
-  content: {
-    type: String,
-    required: true,
-  },
   excerpt: {
     type: String,
     required: true,
   },
-  author: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  content: {
+    type: String,
     required: true,
   },
   tags: [{
     type: String,
     lowercase: true,
   }],
-  category: {
+  aiSummary: {
     type: String,
+    default: null,
+  },
+  isPublished: {
+    type: Boolean,
+    default: true,
+  },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
-    lowercase: true,
   },
   readTime: {
     type: String,
@@ -41,41 +44,6 @@ const blogSchema = new mongoose.Schema({
   featured: {
     type: Boolean,
     default: false,
-  },
-  published: {
-    type: Boolean,
-    default: false,
-  },
-  publishedAt: {
-    type: Date,
-  },
-  // AI Summary fields
-  aiSummary: {
-    type: String,
-    default: null,
-  },
-  aiSummaryMeta: {
-    generatedAt: {
-      type: Date,
-      default: null,
-    },
-    model: {
-      type: String,
-      default: null,
-    },
-    roleAdapted: {
-      type: Boolean,
-      default: false,
-    },
-    // Prepare for future embeddings
-    embeddingId: {
-      type: String,
-      default: null,
-    },
-    relatedPosts: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Blog',
-    }],
   },
   viewCount: {
     type: Number,
@@ -89,10 +57,9 @@ const blogSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Index for faster lookups
-blogSchema.index({ slug: 1 });
-blogSchema.index({ published: 1, publishedAt: -1 });
-blogSchema.index({ category: 1 });
+// Indexes for performance
+blogSchema.index({ isPublished: 1, createdAt: -1 });
 blogSchema.index({ tags: 1 });
 
-module.exports = mongoose.model('Blog', blogSchema);
+// Next.js-safe model export - prevents OverwriteModelError on hot reload
+module.exports = mongoose.models.Blog || mongoose.model('Blog', blogSchema);

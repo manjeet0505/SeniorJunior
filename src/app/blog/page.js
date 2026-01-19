@@ -94,8 +94,15 @@ export default function BlogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 py-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white">
+      <div className="relative px-4 py-10">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-indigo-500/15 blur-3xl" />
+          <div className="absolute top-24 -left-32 h-[520px] w-[520px] rounded-full bg-purple-500/10 blur-3xl" />
+          <div className="absolute bottom-0 -right-32 h-[520px] w-[520px] rounded-full bg-blue-500/10 blur-3xl" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -117,67 +124,109 @@ export default function BlogPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-16"
+            className="mb-14"
           >
-            <div className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-800 hover:border-gray-700 transition-all duration-500">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
-              <div className="p-8 md:p-12">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-medium rounded-full">
-                    Featured
-                  </span>
-                  {featuredBlog.featured && (
-                    <span className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-300 text-xs font-medium rounded-full">
-                      ⭐ Must Read
-                    </span>
-                  )}
-                </div>
-                
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight group-hover:text-white transition-colors">
-                  {featuredBlog.title}
-                </h2>
-                
-                <p className="text-lg text-gray-300 mb-6 leading-relaxed">
-                  {featuredBlog.excerpt}
-                </p>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-sm text-gray-400">
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      {new Date(featuredBlog.createdAt).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-1" />
-                      {featuredBlog.readTime}
-                    </div>
-                  </div>
-                  
-                  <Link
-                    href={`/blog/${featuredBlog.slug}`}
-                    className="inline-flex items-center px-6 py-3 bg-white text-black font-semibold rounded-xl hover:bg-gray-200 transition-all duration-300 group-hover:scale-105"
-                  >
-                    Read Article
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <motion.div
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.25 }}
+                className="lg:col-span-2"
+              >
+                <div className="relative group rounded-3xl p-[1px] bg-gradient-to-r from-indigo-500/50 via-purple-500/40 to-blue-500/40">
+                  <div className="absolute inset-0 rounded-3xl blur-2xl bg-gradient-to-r from-indigo-500/20 via-purple-500/10 to-blue-500/20 opacity-60 group-hover:opacity-90 transition-opacity" />
+                  <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/35 backdrop-blur-xl">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-90" />
+                    <div className="relative p-7 sm:p-10">
+                      <div className="flex flex-wrap items-center gap-2 mb-5">
+                        <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/80">
+                          Editor’s Pick
+                        </span>
+                        <span className="inline-flex items-center rounded-full border border-indigo-400/20 bg-indigo-400/10 px-3 py-1 text-xs font-medium text-indigo-200">
+                          Featured
+                        </span>
+                      </div>
 
-                {/* Tags */}
-                {featuredBlog.tags && featuredBlog.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-6">
-                    {featuredBlog.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium"
-                      >
-                        <Tag className="w-3 h-3 mr-1" />
-                        {tag}
-                      </span>
-                    ))}
+                      <h2 className="text-3xl md:text-4xl font-semibold tracking-tight leading-tight text-white">
+                        {featuredBlog.title}
+                      </h2>
+
+                      <p className="mt-4 text-base sm:text-lg text-white/70 leading-relaxed max-w-3xl">
+                        {featuredBlog.excerpt}
+                      </p>
+
+                      <div className="mt-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-white/60">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {new Date(featuredBlog.createdAt).toLocaleDateString()}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-2" />
+                            {featuredBlog.readTime}
+                          </div>
+                        </div>
+
+                        <Link
+                          href={`/blog/${featuredBlog.slug}`}
+                          className="inline-flex items-center justify-center rounded-2xl bg-white text-black px-5 py-3 text-sm font-semibold transition-all hover:bg-white/90"
+                        >
+                          Read
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Link>
+                      </div>
+
+                      {featuredBlog.tags && featuredBlog.tags.length > 0 && (
+                        <div className="mt-7 flex flex-wrap gap-2">
+                          {featuredBlog.tags.slice(0, 6).map((tag, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70"
+                            >
+                              <Tag className="w-3 h-3" />
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.18 }}
+                className="h-full"
+              >
+                <div className="h-full rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl p-7">
+                  <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70">
+                    Why read these blogs?
+                  </div>
+
+                  <h3 className="mt-4 text-lg font-semibold text-white">
+                    Written to help juniors think like seniors.
+                  </h3>
+
+                  <p className="mt-3 text-sm leading-relaxed text-white/65">
+                    No fluff. No recycled tutorials. Every post is structured like a mentor session: context,
+                    trade-offs, and practical next steps you can apply in your projects and interviews.
+                  </p>
+
+                  <div className="mt-6 space-y-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-sm text-white/70">
+                        We optimize for clarity, not virality.
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-sm text-white/70">
+                        Read one post. Improve one decision. Repeat.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
         )}
@@ -216,37 +265,42 @@ export default function BlogPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-              className="group bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl border border-gray-800 hover:border-gray-700 transition-all duration-300 overflow-hidden"
+              whileHover={{ y: -6 }}
+              className="group relative rounded-2xl border border-white/10 bg-black/30 backdrop-blur-xl overflow-hidden transition-all duration-300 hover:border-white/20"
             >
-              <div className="p-6">
+              <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <div className="absolute -inset-20 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-blue-500/10 blur-2xl" />
+              </div>
+
+              <div className="relative p-6">
                 {/* Tags */}
                 {blog.tags && blog.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {blog.tags.slice(0, 2).map((tag, tagIndex) => (
                       <span
                         key={tagIndex}
-                        className="inline-flex items-center px-2 py-1 rounded-full bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium"
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70 text-xs font-medium"
                       >
-                        <Tag className="w-3 h-3 mr-1" />
+                        <Tag className="w-3 h-3" />
                         {tag}
                       </span>
                     ))}
                     {blog.tags.length > 2 && (
-                      <span className="text-xs text-gray-500">+{blog.tags.length - 2}</span>
+                      <span className="text-xs text-white/50">+{blog.tags.length - 2}</span>
                     )}
                   </div>
                 )}
                 
-                <h3 className="text-xl font-bold mb-3 leading-tight group-hover:text-white transition-colors">
+                <h3 className="text-xl font-semibold mb-3 leading-tight text-white group-hover:text-white/90 transition-colors">
                   {blog.title}
                 </h3>
                 
-                <p className="text-gray-400 mb-4 line-clamp-3 leading-relaxed">
+                <p className="text-white/65 mb-6 line-clamp-3 leading-relaxed">
                   {blog.excerpt}
                 </p>
                 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <div className="flex items-center gap-3 text-sm text-white/50">
                     <div className="flex items-center">
                       <Calendar className="w-3 h-3 mr-1" />
                       {new Date(blog.createdAt).toLocaleDateString()}
@@ -259,7 +313,7 @@ export default function BlogPage() {
                   
                   <Link
                     href={`/blog/${blog.slug}`}
-                    className="inline-flex items-center px-4 py-2 bg-gray-800 text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-300 group-hover:scale-105"
+                    className="inline-flex items-center px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white/80 text-sm font-semibold transition-all duration-300 hover:bg-white/10"
                   >
                     Read
                     <ArrowRight className="w-3 h-3 ml-1" />
@@ -283,6 +337,7 @@ export default function BlogPage() {
             </p>
           </motion.div>
         )}
+        </div>
       </div>
     </div>
   );

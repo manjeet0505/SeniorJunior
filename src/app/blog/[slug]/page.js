@@ -2,10 +2,14 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 
-export default function BlogReadPage({ params }) {
+export default function BlogReadPage() {
+  const params = useParams();
+  const slug = params?.slug;
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,7 +18,7 @@ export default function BlogReadPage({ params }) {
     const fetchBlog = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/blogs/${params.slug}`);
+        const response = await fetch(`/api/blogs/${slug}`);
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -34,10 +38,10 @@ export default function BlogReadPage({ params }) {
       }
     };
 
-    if (params.slug) {
+    if (slug) {
       fetchBlog();
     }
-  }, [params.slug]);
+  }, [slug]);
 
   if (loading) {
     return (
@@ -88,7 +92,7 @@ export default function BlogReadPage({ params }) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -142,11 +146,10 @@ export default function BlogReadPage({ params }) {
           </header>
 
           {/* Blog Content */}
-          <article className="prose prose-invert prose-lg max-w-none">
-            <div 
-              className="text-gray-300 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: blog.content.replace(/\n/g, '<br>') }}
-            />
+          <article className="prose prose-invert prose-lg max-w-none prose-headings:scroll-mt-24 prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-white/75 prose-li:text-white/75 prose-strong:text-white prose-a:text-indigo-300 hover:prose-a:text-indigo-200 prose-hr:border-white/10 prose-blockquote:border-white/10 prose-blockquote:text-white/70 prose-code:text-white/80 prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10">
+            <ReactMarkdown>
+              {blog.content}
+            </ReactMarkdown>
           </article>
         </motion.div>
       </div>

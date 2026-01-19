@@ -1,4 +1,5 @@
 const { fontFamily } = require("tailwindcss/defaultTheme")
+const typography = require('@tailwindcss/typography')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -57,5 +58,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [typography],
 }

@@ -4,11 +4,9 @@ const Blog = require('@/models/Blog');
 
 export async function GET() {
   try {
+    console.log('API: Starting GET /api/blogs');
     await connectDB();
-    
-    // Debug: Check if Blog model is working
-    const allBlogs = await Blog.find({});
-    console.log('API: Total blogs in DB:', allBlogs.length);
+    console.log('API: Database connected');
     
     const blogs = await Blog.find({ isPublished: true })
       .select('title slug excerpt tags readTime featured createdAt')

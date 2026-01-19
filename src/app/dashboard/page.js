@@ -24,6 +24,63 @@ const StatCard = ({ icon, title, value, helperText }) => (
   </motion.div>
 );
 
+const CuratedReadingCard = ({ blog }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.55 }}
+    className="group relative rounded-2xl border border-white/10 bg-black/30 backdrop-blur-xl overflow-hidden transition-all duration-300 hover:border-white/20"
+    whileHover={{ y: -4 }}
+  >
+    <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+      <div className="absolute -inset-20 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-blue-500/10 blur-2xl" />
+    </div>
+
+    <div className="relative p-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-white/60">
+            AI-Curated Reading
+          </p>
+          <h3 className="mt-2 text-xl font-semibold leading-tight text-white">
+            {blog?.title || 'Reading unavailable'}
+          </h3>
+        </div>
+
+        <div className="shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-white/70">
+          <BookOpen size={18} />
+        </div>
+      </div>
+
+      <p className="mt-3 text-sm leading-relaxed text-white/65 line-clamp-3">
+        {blog?.excerpt || 'We couldn\'t load a blog right now. Please try again in a moment.'}
+      </p>
+
+      <div className="mt-6 flex items-center justify-between">
+        <p className="text-xs text-white/50">
+          Handpicked to improve your next technical decision.
+        </p>
+
+        {blog?.slug ? (
+          <Link
+            href={`/blog/${blog.slug}`}
+            className="inline-flex items-center px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white/80 text-sm font-semibold transition-all duration-300 hover:bg-white/10"
+          >
+            Read in 5 minutes
+            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        ) : (
+          <span className="inline-flex items-center px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white/40 text-sm font-semibold">
+            Read in 5 minutes
+          </span>
+        )}
+      </div>
+    </div>
+  </motion.div>
+);
+
 const SeniorDeveloperCard = ({ senior }) => (
   <motion.div
     className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6 text-center hover:border-purple-500/50 transition-colors duration-300"
@@ -123,8 +180,8 @@ const NextStepCard = ({ user, stats }) => {
             {nextStep.icon}
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-purple-300">Your Next Step</h3>
-            <p className="text-gray-300 text-sm">Recommended action for you</p>
+            <h3 className="text-2xl font-bold text-purple-300">AI Recommended Next Step</h3>
+            <p className="text-gray-300 text-sm">Based on your activity and learning stage, our AI suggests this action.</p>
           </div>
         </div>
         <h4 className="text-xl font-semibold mb-2">{nextStep.title}</h4>
@@ -151,6 +208,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ connections: 0, pendingRequests: 0, messages: 0, upcomingSessions: 0 });
   const [recommendedSeniors, setRecommendedSeniors] = useState([]);
   const [upcomingSessions, setUpcomingSessions] = useState([]);
+  const [curatedBlog, setCuratedBlog] = useState(null);
 
   const fetchDashboardData = useCallback(async () => {
     if (!authenticated) return;
@@ -192,12 +250,27 @@ export default function Dashboard() {
           // Don't fail the whole dashboard if seniors API fails
         }
       }
+
+      // Fetch one blog for AI-curated reading (static selection for now)
+      try {
+        const blogsResponse = await fetch('/api/blogs');
+        if (blogsResponse.ok) {
+          const blogs = await blogsResponse.json();
+          setCuratedBlog(Array.isArray(blogs) ? blogs[0] : null);
+        } else {
+          setCuratedBlog(null);
+        }
+      } catch (blogsError) {
+        console.error('Error fetching curated blog:', blogsError);
+        setCuratedBlog(null);
+      }
     } catch (error) {
       console.error('Unexpected error in fetchDashboardData:', error);
       // Set fallback values for everything
       setStats({ connections: 0, pendingRequests: 0, messages: 0, upcomingSessions: 0 });
       setUpcomingSessions([]);
       setRecommendedSeniors([]);
+      setCuratedBlog(null);
     } finally {
       setDashboardLoading(false);
     }
@@ -256,27 +329,47 @@ export default function Dashboard() {
               icon={<Users size={28} />} 
               title="Total Connections" 
               value={stats.connections}
-              helperText={stats.connections === 0 ? "Start connecting!" : "Keep growing!"}
+              helperText={stats.connections === 0 ? "AI-Recommended: start connecting" : "Based on learning signals: keep going"}
             />
             <StatCard 
               icon={<Mail size={28} />} 
               title="Pending Requests" 
               value={stats.pendingRequests}
-              helperText={stats.pendingRequests === 0 ? "No pending requests" : "Awaiting response"}
+              helperText={stats.pendingRequests === 0 ? "No pending requests" : "Based on learning signals: awaiting response"}
             />
             <StatCard 
               icon={<Calendar size={28} />} 
               title="Upcoming Sessions" 
               value={stats.upcomingSessions}
-              helperText={stats.upcomingSessions === 0 ? "Book your first session" : "Get ready!"}
+              helperText={stats.upcomingSessions === 0 ? "AI-Recommended: book your first session" : "Get ready!"}
             />
             <StatCard 
               icon={<Mail size={28} />} 
               title="Unread Messages" 
               value={stats.messages}
-              helperText={stats.messages === 0 ? "All caught up!" : "New messages"}
+              helperText={stats.messages === 0 ? "All caught up" : "New messages"}
             />
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.05 }}
+            className="mt-6 bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-white">🤖 AI Insight</h3>
+                <p className="mt-2 text-sm leading-relaxed text-white/65">
+                  Most juniors at your stage grow faster by reading one high-signal blog
+                  before booking their first mentor session.
+                </p>
+              </div>
+              <div className="shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-white/70">
+                <Zap size={18} />
+              </div>
+            </div>
+          </motion.div>
         </section>
 
         {/* Your Next Step Highlight Card */}
@@ -330,11 +423,26 @@ export default function Dashboard() {
           )}
         </section>
 
+        {/* AI-Curated Reading */}
+        <section className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold">AI-Curated Reading</h2>
+              <p className="text-sm text-gray-400 mt-1">Handpicked to improve your next technical decision.</p>
+            </div>
+            <Link href="/blog" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
+              View All →
+            </Link>
+          </div>
+
+          <CuratedReadingCard blog={curatedBlog} />
+        </section>
+
         {/* Recommended Senior Developers Section */}
         {user.role === 'junior' && (
           <section className="mb-12">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Recommended Senior Developers</h2>
+              <h2 className="text-2xl font-bold">AI-Recommended Senior Developers</h2>
               <Link href="/seniors" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
                 Browse All →
               </Link>

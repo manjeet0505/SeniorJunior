@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 
 export default function BlogReadPage() {
   const params = useParams();
@@ -147,7 +149,7 @@ export default function BlogReadPage() {
 
           {/* Blog Content */}
           <article className="prose prose-invert prose-lg max-w-none prose-headings:scroll-mt-24 prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-white/75 prose-li:text-white/75 prose-strong:text-white prose-a:text-indigo-300 hover:prose-a:text-indigo-200 prose-hr:border-white/10 prose-blockquote:border-white/10 prose-blockquote:text-white/70 prose-code:text-white/80 prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10">
-            <ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
               {blog.content}
             </ReactMarkdown>
           </article>

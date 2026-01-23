@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
     }
     
     const blog = await Blog.findOne({ slug, isPublished: true })
-      .select('title slug content excerpt tags readTime featured createdAt viewCount likeCount')
+      .select('title slug content excerpt tags readTime featured createdAt viewCount likeCount aiSummary')
       .lean();
     
     if (!blog) {

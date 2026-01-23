@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Tag, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -15,6 +15,7 @@ export default function BlogReadPage() {
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [summaryOpen, setSummaryOpen] = useState(true);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -146,6 +147,33 @@ export default function BlogReadPage() {
               </div>
             )}
           </header>
+
+          <section className="mb-8">
+            <div className="rounded-xl border border-indigo-500/20 bg-slate-900/40 backdrop-blur-md ring-1 ring-indigo-500/10 shadow-[0_0_30px_rgba(99,102,241,0.12)]">
+              <button
+                type="button"
+                onClick={() => setSummaryOpen((v) => !v)}
+                className="w-full flex items-center justify-between p-4 md:p-5 text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg md:text-xl font-semibold text-indigo-300">🤖 AI Summary</span>
+                  <span className="text-[10px] md:text-xs uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">Premium</span>
+                </div>
+                <ChevronDown
+                  className={`w-5 h-5 text-indigo-300 transition-transform duration-300 ${summaryOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {summaryOpen && (
+                <div className="px-4 pb-4 md:px-5 md:pb-5 text-sm md:text-base leading-relaxed text-white/80 whitespace-pre-line">
+                  {blog?.aiSummary && blog.aiSummary.trim().length > 0 ? (
+                    blog.aiSummary
+                  ) : (
+                    <span className="text-gray-400 italic">AI is preparing a summary for this article.</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
 
           {/* Blog Content */}
           <article className="prose prose-invert prose-lg max-w-none prose-headings:scroll-mt-24 prose-headings:tracking-tight prose-p:leading-relaxed prose-p:text-white/75 prose-li:text-white/75 prose-strong:text-white prose-a:text-indigo-300 hover:prose-a:text-indigo-200 prose-hr:border-white/10 prose-blockquote:border-white/10 prose-blockquote:text-white/70 prose-code:text-white/80 prose-pre:bg-white/5 prose-pre:border prose-pre:border-white/10">

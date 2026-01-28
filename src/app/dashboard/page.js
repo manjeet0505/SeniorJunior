@@ -209,6 +209,9 @@ export default function Dashboard() {
   const [recommendedSeniors, setRecommendedSeniors] = useState([]);
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [curatedBlog, setCuratedBlog] = useState(null);
+  const [lastReadBlog, setLastReadBlog] = useState(null);
+  const [learningResource, setLearningResource] = useState(null);
+  const [learningLoading, setLearningLoading] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     if (!authenticated) return;
@@ -283,6 +286,41 @@ export default function Dashboard() {
       router.push('/login');
     }
   }, [authenticated, authLoading, fetchDashboardData, router]);
+
+  // Load most recently read blog from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('sj_last_read_blog');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.slug) setLastReadBlog(parsed);
+    } catch (_) {}
+  }, []);
+
+  // Fetch a single most relevant resource for the last read blog
+  useEffect(() => {
+    let aborted = false;
+    async function run() {
+      if (!lastReadBlog?.slug) return;
+      setLearningLoading(true);
+      try {
+        const res = await fetch(`/api/blogs/${lastReadBlog.slug}/related-resources?limit=3`);
+        if (!res.ok) throw new Error('Failed to load related resources');
+        const data = await res.json();
+        if (aborted) return;
+        const items = Array.isArray(data?.resources) ? data.resources : [];
+        setLearningResource(items[0] || null);
+      } catch (e) {
+        if (!aborted) setLearningResource(null);
+      } finally {
+        if (!aborted) setLearningLoading(false);
+      }
+    }
+    run();
+    return () => {
+      aborted = true;
+    };
+  }, [lastReadBlog?.slug]);
 
   if (authLoading || dashboardLoading) {
     return (
@@ -359,10 +397,9 @@ export default function Dashboard() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-lg font-semibold text-white">🤖 AI Insight</h3>
+                <h3 className="text-lg font-semibold text-white">🤖 AI Insight (Stage-based)</h3>
                 <p className="mt-2 text-sm leading-relaxed text-white/65">
-                  Most juniors at your stage grow faster by reading one high-signal blog
-                  before booking their first mentor session.
+                  At your current stage, most juniors grow faster by combining focused reading with one practical action.
                 </p>
               </div>
               <div className="shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-white/70">
@@ -370,6 +407,58 @@ export default function Dashboard() {
               </div>
             </div>
           </motion.div>
+
+          {/* AI Learning Signal */}
+          {(lastReadBlog?.slug || learningLoading) && (
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.1 }}
+              className="mt-4 rounded-2xl border border-indigo-500/20 bg-slate-900/40 backdrop-blur-md ring-1 ring-indigo-500/10 shadow-[0_0_30px_rgba(99,102,241,0.12)]"
+            >
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">🤖 AI Learning Signal</h3>
+                    <p className="mt-1 text-sm text-white/65">Based on what you explored recently, this is the next best step.</p>
+                  </div>
+                  <div className="shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-white/70">
+                    <Zap size={18} />
+                  </div>
+                </div>
+
+                {learningLoading ? (
+                  <div className="h-24 rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+                ) : learningResource ? (
+                  <div className="group rounded-xl border border-white/10 bg-white/5 hover:bg-white/7.5 transition-colors">
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">{learningResource.type}</span>
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">{learningResource.difficulty}</span>
+                      </div>
+                      <h4 className="text-white font-semibold text-base leading-snug mb-1">{learningResource.title}</h4>
+                      {learningResource.description && (
+                        <p className="text-white/70 text-sm mb-3 line-clamp-2">{learningResource.description}</p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs text-white/50">From your last read: {lastReadBlog?.title}</div>
+                        <a
+                          href={learningResource.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-200 text-sm hover:bg-indigo-500/30 hover:text-white transition"
+                        >
+                          Explore Resource
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-white/60 text-sm">No immediate action suggested yet. Keep exploring.</p>
+                )}
+              </div>
+            </motion.div>
+          )}
         </section>
 
         {/* Your Next Step Highlight Card */}

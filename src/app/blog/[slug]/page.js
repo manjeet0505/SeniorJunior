@@ -46,6 +46,19 @@ export default function BlogReadPage() {
   }, [slug]);
 
   useEffect(() => {
+    if (!blog?.slug) return;
+    try {
+      const payload = {
+        slug: blog.slug,
+        title: blog.title,
+        tags: Array.isArray(blog.tags) ? blog.tags : [],
+        readAt: Date.now(),
+      };
+      localStorage.setItem('sj_last_read_blog', JSON.stringify(payload));
+    } catch (_) {}
+  }, [blog?.slug]);
+
+  useEffect(() => {
     if (!slug) return;
     let aborted = false;
     setRelatedLoading(true);

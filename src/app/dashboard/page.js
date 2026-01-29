@@ -188,7 +188,8 @@ const NextStepCard = ({ user, stats }) => {
         <p className="text-gray-400 mb-6">{nextStep.description}</p>
         <Link 
           href={nextStep.href}
-          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full font-semibold hover:scale-105 transform transition-all duration-300"
+          aria-label={`Primary action: ${nextStep.action}`}
+          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full font-semibold hover:scale-105 transform transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70"
         >
           {nextStep.action}
           <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -339,8 +340,8 @@ export default function Dashboard() {
       <div className="min-h-screen text-white pt-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero / Welcome Section */}
-        <header className="mb-12">
-          <div className="flex justify-between items-start">
+        <header className="mb-10" aria-label="Welcome">
+          <div className="flex items-start">
             <div>
               <h1 className="text-4xl md:text-5xl font-extrabold mb-2">Welcome back, {user.username}!</h1>
               <p className="text-xl text-gray-400">
@@ -350,42 +351,36 @@ export default function Dashboard() {
                 }
               </p>
             </div>
-            <Link
-              href={user?.id ? `/profile/${user.id}` : '/profile/edit'}
-              className="px-6 py-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-full font-semibold hover:bg-white/20 transition-all duration-300"
-            >
-              Profile
-            </Link>
           </div>
         </header>
 
         {/* Stats Cards Section */}
-        <section className="mb-12">
+        <section className="mb-12" aria-label="Your Progress">
           <h2 className="text-2xl font-bold mb-6">Your Progress</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard 
               icon={<Users size={28} />} 
               title="Total Connections" 
               value={stats.connections}
-              helperText={stats.connections === 0 ? "AI-Recommended: start connecting" : "Based on learning signals: keep going"}
+              helperText={stats.connections === 0 ? "A good first step is to reach out to one mentor today." : "Nice momentum—maintain one meaningful connection a week."}
             />
             <StatCard 
               icon={<Mail size={28} />} 
               title="Pending Requests" 
               value={stats.pendingRequests}
-              helperText={stats.pendingRequests === 0 ? "No pending requests" : "Based on learning signals: awaiting response"}
+              helperText={stats.pendingRequests === 0 ? "Your queue is clear—use the time to learn or connect." : "Review and respond to keep conversations moving."}
             />
             <StatCard 
               icon={<Calendar size={28} />} 
               title="Upcoming Sessions" 
               value={stats.upcomingSessions}
-              helperText={stats.upcomingSessions === 0 ? "AI-Recommended: book your first session" : "Get ready!"}
+              helperText={stats.upcomingSessions === 0 ? "Book one short session to unblock your next step." : "Prepare a question to make the session count."}
             />
             <StatCard 
               icon={<Mail size={28} />} 
               title="Unread Messages" 
               value={stats.messages}
-              helperText={stats.messages === 0 ? "All caught up" : "New messages"}
+              helperText={stats.messages === 0 ? "You’re all caught up—great job." : "You have new conversations to continue."}
             />
           </div>
 
@@ -394,13 +389,12 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.05 }}
             className="mt-6 bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6"
+            aria-label="AI Insight — Why this matters"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-lg font-semibold text-white">🤖 AI Insight (Stage-based)</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/65">
-                  At your current stage, most juniors grow faster by combining focused reading with one practical action.
-                </p>
+                <h3 className="text-lg font-semibold text-white">🤖 Why this matters</h3>
+                <p className="mt-2 text-sm leading-relaxed text-white/65">A quick perspective for your current stage. Pair one short read with one focused action for steady growth.</p>
               </div>
               <div className="shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-white/70">
                 <Zap size={18} />
@@ -408,66 +402,64 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* AI Learning Signal */}
+          {/* AI Learning Signal (collapsible) */}
           {(lastReadBlog?.slug || learningLoading) && (
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.1 }}
-              className="mt-4 rounded-2xl border border-indigo-500/20 bg-slate-900/40 backdrop-blur-md ring-1 ring-indigo-500/10 shadow-[0_0_30px_rgba(99,102,241,0.12)]"
-            >
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-4 mb-3">
+            <section aria-label="AI Learning Signal" className="mt-4">
+              <details className="group rounded-2xl border border-indigo-500/20 bg-slate-900/40 backdrop-blur-md ring-1 ring-indigo-500/10 shadow-[0_0_30px_rgba(99,102,241,0.12)]">
+                <summary className="flex items-start justify-between gap-4 p-6 cursor-pointer list-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/70 rounded-2xl">
                   <div>
                     <h3 className="text-lg font-semibold text-white">🤖 AI Learning Signal</h3>
-                    <p className="mt-1 text-sm text-white/65">Based on what you explored recently, this is the next best step.</p>
+                    <p className="mt-1 text-sm text-white/65">What to learn next</p>
                   </div>
                   <div className="shrink-0 rounded-full border border-white/10 bg-white/5 p-3 text-white/70">
                     <Zap size={18} />
                   </div>
-                </div>
-
-                {learningLoading ? (
-                  <div className="h-24 rounded-xl bg-white/5 border border-white/10 animate-pulse" />
-                ) : learningResource ? (
-                  <div className="group rounded-xl border border-white/10 bg-white/5 hover:bg-white/7.5 transition-colors">
-                    <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">{learningResource.type}</span>
-                        <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">{learningResource.difficulty}</span>
-                      </div>
-                      <h4 className="text-white font-semibold text-base leading-snug mb-1">{learningResource.title}</h4>
-                      {learningResource.description && (
-                        <p className="text-white/70 text-sm mb-3 line-clamp-2">{learningResource.description}</p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs text-white/50">From your last read: {lastReadBlog?.title}</div>
-                        <a
-                          href={learningResource.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-200 text-sm hover:bg-indigo-500/30 hover:text-white transition"
-                        >
-                          Explore Resource
-                        </a>
+                </summary>
+                <div className="px-6 pb-6">
+                  {learningLoading ? (
+                    <div className="h-24 rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+                  ) : learningResource ? (
+                    <div className="group rounded-xl border border-white/10 bg-white/5 hover:bg-white/7.5 transition-colors">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300">{learningResource.type}</span>
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">{learningResource.difficulty}</span>
+                        </div>
+                        <h4 className="text-white font-semibold text-base leading-snug mb-1">{learningResource.title}</h4>
+                        {learningResource.description && (
+                          <p className="text-white/70 text-sm mb-3 line-clamp-2">{learningResource.description}</p>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-white/50">From your last read: {lastReadBlog?.title}</div>
+                          <a
+                            href={learningResource.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Open recommended learning resource"
+                            className="inline-flex items-center px-3 py-1.5 rounded-lg border border-indigo-500/30 text-indigo-200 text-sm hover:bg-indigo-500/20 hover:text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/70"
+                          >
+                            Explore resource
+                          </a>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <p className="text-white/60 text-sm">No immediate action suggested yet. Keep exploring.</p>
-                )}
-              </div>
-            </motion.div>
+                  ) : (
+                    <p className="text-white/60 text-sm">No immediate suggestion yet—keep exploring and we’ll refine this.
+                    </p>
+                  )}
+                </div>
+              </details>
+            </section>
           )}
         </section>
 
         {/* Your Next Step Highlight Card */}
-        <section className="mb-12">
+        <section className="mb-12" aria-label="AI Recommended Next Step">
           <NextStepCard user={user} stats={stats} />
         </section>
 
         {/* Upcoming Sessions Section */}
-        <section className="mb-12">
+        <section className="mb-12" aria-label="Upcoming Sessions">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Upcoming Sessions</h2>
             <Link href="/schedule" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
@@ -501,10 +493,11 @@ export default function Dashboard() {
                 <Calendar size={24} />
               </div>
               <h3 className="text-xl font-semibold mb-2">No upcoming sessions</h3>
-              <p className="text-gray-400 mb-6">Book your first mentoring session to get started</p>
+              <p className="text-gray-400 mb-6">No sessions yet. A short session can unblock your next move.</p>
               <Link 
                 href="/schedule"
-                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full font-semibold hover:scale-105 transform transition-all duration-300"
+                className="inline-flex items-center px-6 py-3 border border-white/20 text-white/90 rounded-full font-semibold hover:bg-white/5 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70"
+                aria-label="Schedule a mentoring session"
               >
                 Schedule Session
               </Link>
@@ -513,7 +506,7 @@ export default function Dashboard() {
         </section>
 
         {/* AI-Curated Reading */}
-        <section className="mb-12">
+        <section className="mb-12" aria-label="AI-Curated Reading">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-2xl font-bold">AI-Curated Reading</h2>
@@ -529,7 +522,7 @@ export default function Dashboard() {
 
         {/* Recommended Senior Developers Section */}
         {user.role === 'junior' && (
-          <section className="mb-12">
+          <section className="mb-12" aria-label="AI-Recommended Senior Developers">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">AI-Recommended Senior Developers</h2>
               <Link href="/seniors" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
@@ -546,14 +539,14 @@ export default function Dashboard() {
                   <Users size={24} />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">No senior developers available</h3>
-                <p className="text-gray-400">Check back later for new mentor opportunities</p>
+                <p className="text-gray-400">We’re expanding your mentor matches—check back soon or try a search.</p>
               </div>
             )}
           </section>
         )}
 
         {/* Quick Actions Section */}
-        <section className="mb-12">
+        <section className="mb-12" aria-label="Quick Actions">
           <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <QuickActionCard 
@@ -584,7 +577,7 @@ export default function Dashboard() {
         </section>
 
         {/* Recent Activity Section */}
-        <section>
+        <section aria-label="Recent Activity">
           <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>
           <div className="bg-black/30 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
             <div className="space-y-4">
@@ -623,7 +616,7 @@ export default function Dashboard() {
               )}
               {stats.connections === 0 && stats.pendingRequests === 0 && stats.messages === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-gray-400">No recent activity. Start by connecting with other developers!</p>
+                  <p className="text-gray-400">Quiet for now—send one connection request to start a helpful conversation.</p>
                 </div>
               )}
             </div>

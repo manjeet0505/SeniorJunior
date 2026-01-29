@@ -8,6 +8,7 @@ export default function AdvancedNavbar() {
   const [isClient, setIsClient] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const profileHref = user?.id || user?._id ? `/profile/${user?.id || user?._id}` : "/profile/edit";
 
@@ -48,20 +49,57 @@ export default function AdvancedNavbar() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-4 transition-all duration-300 ${navClass}`} style={{minHeight: 72}}>
+      <nav className={`fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-4 transition-all duration-300 ${navClass}`} style={{minHeight: 72}} aria-label="Primary Navigation">
         <div className="flex-shrink-0">
           <Link href="/">
             <span className="text-2xl font-bold text-white">SeniorJunior</span>
           </Link>
         </div>
         <div className="hidden md:flex md:items-center md:space-x-6">
-          <Link href="/dashboard" className={`${linkClass} px-3 py-2 rounded-md text-sm font-medium`}>Dashboard</Link>
-          <Link href="/resources" className={`${linkClass} px-3 py-2 rounded-md text-sm font-medium`}>Resources</Link>
-          <Link href="/schedule" className={`${linkClass} px-3 py-2 rounded-md text-sm font-medium`}>Schedule</Link>
+          <Link href="/dashboard" aria-label="Go to Dashboard" className={`${linkClass} px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70`}>Dashboard</Link>
+          <Link href="/resources" aria-label="Go to Resources" className={`${linkClass} px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70`}>Resources</Link>
+          <Link href="/schedule" aria-label="Go to Schedule" className={`${linkClass} px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70`}>Schedule</Link>
           {isClient && isLoggedIn ? (
-            <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-700">
-              <Link href={profileHref} className="text-gray-300 bg-white/10 hover:bg-white/20 px-5 py-2 rounded-full text-sm font-medium border border-transparent transition-all duration-200">Profile</Link>
-              <button onClick={handleSignOut} className="text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-5 py-2 rounded-full text-sm font-medium transition-all duration-200">Sign Out</button>
+            <div className="relative ml-4 pl-4 border-l border-gray-700">
+              <button
+                type="button"
+                className="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 text-white hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70"
+                aria-haspopup="menu"
+                aria-expanded={profileOpen ? "true" : "false"}
+                aria-label="Open profile menu"
+                onClick={() => setProfileOpen((v) => !v)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setProfileOpen(false);
+                }}
+              >
+                <span className="sr-only">Open profile menu</span>
+                <span className="text-sm font-semibold">
+                  {(user?.username || user?.name || 'U').toString().charAt(0).toUpperCase()}
+                </span>
+              </button>
+              {profileOpen && (
+                <div
+                  role="menu"
+                  aria-label="Profile Menu"
+                  className="absolute right-0 mt-2 w-48 rounded-xl border border-white/10 bg-black/80 backdrop-blur-lg shadow-lg p-1 z-50"
+                >
+                  <Link
+                    href={profileHref}
+                    role="menuitem"
+                    className="block w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70"
+                    onClick={() => setProfileOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    role="menuitem"
+                    onClick={() => { setProfileOpen(false); handleSignOut(); }}
+                    className="block w-full text-left px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-700">
@@ -75,6 +113,7 @@ export default function AdvancedNavbar() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-white hover:bg-white/10 focus:outline-none"
             aria-expanded={isMobileMenuOpen ? "true" : "false"}
+            aria-label="Toggle menu"
           >
             <span className="sr-only">Open main menu</span>
             {isMobileMenuOpen ? (

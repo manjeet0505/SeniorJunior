@@ -9,7 +9,7 @@ function FooterLink({ href, children }) {
   return (
     <Link
       href={href}
-      className="group inline-flex w-fit text-sm text-gray-400 transition-colors duration-200 hover:text-white"
+      className="group inline-flex w-fit text-sm text-gray-400 transition-colors duration-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded-md"
     >
       <span className="relative">
         {children}
@@ -26,7 +26,8 @@ export default function Footer() {
   const roleSection = normalizedRole ? FOOTER_LINKS.roleSections[normalizedRole] : null;
 
   return (
-    <footer className="bg-white/5 backdrop-blur-xl border-t border-white/10 pt-16 pb-8">
+    <footer className="relative isolate bg-black/30 backdrop-blur-md border-t border-white/10 pt-16 pb-10">
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-white/10 via-white/20 to-white/10" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="lg:col-span-2">
@@ -38,8 +39,36 @@ export default function Footer() {
               </div>
 
               <p className="text-sm text-gray-400 max-w-md leading-relaxed">
-                Smart mentorship & learning powered by AI
+                AI-guided learning with real mentorship.
+                Practical, steady progress—one focused step at a time.
               </p>
+
+              <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-white/60" aria-label="Platform capabilities">
+                <li className="flex items-center">
+                  <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-white/30" />
+                  AI-guided learning paths
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-white/30" />
+                  Mentor-recommended resources
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-white/30" />
+                  Cost-efficient AI summaries
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-white/30" />
+                  Scalable architecture
+                </li>
+              </ul>
+
+              <Link
+                href="/resources"
+                aria-label="Explore AI-guided learning"
+                className="mt-3 inline-flex w-fit items-center text-sm text-gray-300 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded-md"
+              >
+                Explore AI-guided learning →
+              </Link>
             </div>
           </div>
 
@@ -94,7 +123,8 @@ export default function Footer() {
 
           <Link
             href="#top"
-            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-300 transition-all duration-200 hover:bg-white/10 hover:text-white"
+            aria-label="Back to top"
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-300 transition-all duration-200 hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
           >
             Back to top
           </Link>
